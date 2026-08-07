@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 
 #include "P2Game.hpp"
+#include <future>
 
 namespace P2
 {
@@ -24,9 +25,22 @@ namespace P2
 
 	};
 
-	TEST_F(GameFixture, Pass)
+	TEST_F(GameFixture, Loop)
 	{
+		using namespace std::chrono_literals;
 
+		auto requestClose = std::async([&game = game]()
+		{
+			std::this_thread::sleep_for(500ms);
+			game.requestClose();
+		});
+
+		game.loop();
+	}
+
+	TEST_F(GameFixture, LoopStep)
+	{
+		game.loopStep(Time::FromMilliseconds(0.01f));
 	}
 
 }
