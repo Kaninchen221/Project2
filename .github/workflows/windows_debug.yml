@@ -21,5 +21,8 @@ jobs:
       - name: Setup
         run: ./setup_debug.bat
       
+      - name: Build project
+        run: cmake --build build --config Debug --parallel
+      
       - name: Run tests
         run: ./build/runtime/Debug/P2LibTests.exe
