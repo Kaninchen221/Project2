@@ -1,2 +1,7 @@
-# Project2
-2DGame, C++
+# FromersWorld
+2D game from scratch 
+
+# Prerequisites
+- Python
+- Conan2
+- Ninja
