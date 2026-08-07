@@ -22,4 +22,4 @@ jobs:
         run: ./setup_debug.bat
       
       - name: Run tests
-        run: ./build/runtime/Debug/P2LibTests
+        run: ./build/runtime/Debug/P2LibTests.exe
