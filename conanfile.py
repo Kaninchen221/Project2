@@ -11,7 +11,8 @@ class Game2DConanFile(ConanFile):
     requires = [
         "gtest/1.17.0@",
         "spdlog/1.14.1@",
-        "nlohmann_json/3.10.5@"
+        "nlohmann_json/3.10.5@",
+        "sfml/3.0.2@"
         ]
 
     default_options = {

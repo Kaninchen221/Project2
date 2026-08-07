@@ -10,9 +10,12 @@ add_library(P2Lib STATIC ${SOURCES})
 target_compile_features(P2Lib PUBLIC cxx_std_23)
 target_include_directories(P2Lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(P2Lib PUBLIC spdlog::spdlog)
-target_link_libraries(P2Lib PUBLIC gtest::gtest)
-target_link_libraries(P2Lib PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(P2Lib PUBLIC 
+	spdlog::spdlog
+	gtest::gtest
+	nlohmann_json::nlohmann_json
+	sfml::sfml
+)
 
 set_target_properties(P2Lib PROPERTIES
 	LINKER_LANGUAGE CXX
