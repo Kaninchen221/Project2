@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.15)
 project(Project2 LANGUAGES CXX)
 
+# Global compile options
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    add_compile_options(/W4 /WX /external:W0 /external:anglebrackets /MP)
+endif()
+
 # Find packages
 find_package(GTest CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
