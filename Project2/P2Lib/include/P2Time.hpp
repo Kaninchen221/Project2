@@ -2,47 +2,49 @@
 
 #include "P2LibConfig.hpp"
 
-#include <compare>
+#include <chrono>
+
 
 namespace P2
-{
+{	
 	class P2_API Time 
 	{
 
 	public:
-
-		using NumericType = float;
-
-		inline static constexpr NumericType NanosecondsInMicrosecond = 1000.f;
-		inline static constexpr NumericType MicrosecondsInMillisecond = 1000.f;
-		inline static constexpr NumericType MillisecondsInSecond = 1000.f;
-		inline static constexpr NumericType SecondsInMinute = 60.f;
-		inline static constexpr NumericType MinutesInHour = 60.f;
+		using Nanoseconds = std::chrono::nanoseconds;
+		using Microseconds = std::chrono::microseconds;
+		using Milliseconds = std::chrono::milliseconds;
+		using Seconds = std::chrono::seconds;
+		using Minutes = std::chrono::minutes;
+		using Hours = std::chrono::hours;
 
 		Time() noexcept;
 		Time(const Time& other) noexcept = default;
 		Time(Time&& other) noexcept = default;
-		Time(NumericType nanoseconds) noexcept;
+		Time(Nanoseconds nanoseconds) noexcept;
 
 		Time& operator = (const Time& other) noexcept = default;
 		Time& operator = (Time&& other) noexcept = default;
-		Time& operator = (NumericType nanoseconds) noexcept;
+		Time& operator = (Nanoseconds nanoseconds) noexcept;
 
 		~Time() noexcept = default;
 
-		NumericType getAsNanoseconds() const noexcept;
-		NumericType getAsMicroseconds() const noexcept;
-		NumericType getAsMilliseconds() const noexcept;
-		NumericType getAsSeconds() const noexcept;
-		NumericType getAsMinutes() const noexcept;
-		NumericType getAsHours() const noexcept;
+		Nanoseconds getAsNanoseconds() const noexcept;
+		Microseconds getAsMicroseconds() const noexcept;
+		Milliseconds getAsMilliseconds() const noexcept;
+		Seconds getAsSeconds() const noexcept;
+		Minutes getAsMinutes() const noexcept;
+		Hours getAsHours() const noexcept;
 
-		static Time FromNanoseconds(NumericType nanoseconds) noexcept;
-		static Time FromMicroseconds(NumericType microseconds) noexcept;
-		static Time FromMilliseconds(NumericType milliseconds) noexcept;
-		static Time FromSeconds(NumericType seconds) noexcept;
-		static Time FromMinutes(NumericType minutes) noexcept;
-		static Time FromHours(NumericType hours) noexcept;
+		static Time FromNanoseconds(Nanoseconds nanoseconds) noexcept;
+		static Time FromMicroseconds(Microseconds microseconds) noexcept;
+		static Time FromMilliseconds(Milliseconds milliseconds) noexcept;
+		static Time FromSeconds(Seconds seconds) noexcept;
+		static Time FromMinutes(Minutes minutes) noexcept;
+		static Time FromHours(Hours hours) noexcept;
+
+		template<class SourceT>
+		static Time From(SourceT&& source);
 
 		auto operator <=> (const Time& other) const noexcept = default;
 
@@ -54,8 +56,14 @@ namespace P2
 
 	private:
 
-		NumericType timeAsNanoseconds = 0.f;
+		Nanoseconds timeAsNanoseconds;
 	};
+
+	template<class SourceT>
+	Time Time::From(SourceT&& source)
+	{
+		return std::chrono::duration_cast<SourceT>(source);
+	}
 
 	inline Time operator - (const Time& first, const Time& second) noexcept
 	{

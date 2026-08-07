@@ -40,7 +40,9 @@ namespace P2
 
 	TEST_F(GameFixture, LoopStep)
 	{
-		game.loopStep(Time::FromMilliseconds(0.01f));
+		using namespace std::chrono_literals;
+
+		game.loopStep(Time::FromMilliseconds(1ms));
 	}
 
 }

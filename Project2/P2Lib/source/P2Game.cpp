@@ -30,7 +30,7 @@ namespace P2
 		return true;
 	}
 
-	void Game::loopStep(const Time& DeltaTime)
+	void Game::loopStep(const Time&)
 	{
 		while (const auto event = window.pollEvent())
 		{
@@ -41,8 +41,6 @@ namespace P2
 		}
 
 		window.clear();
-
-		Logger->info("{}", DeltaTime.getAsSeconds());
 
 		/// Inform objects. systems etc. about DeltaTime
 
@@ -57,7 +55,7 @@ namespace P2
 	void Game::createWindow()
 	{
 		const auto videoMode = sf::VideoMode::getDesktopMode();
-		
+
 		window.create(videoMode, "Project2", sf::State::Fullscreen);
 	}
 }

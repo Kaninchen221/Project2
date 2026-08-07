@@ -3,81 +3,81 @@
 namespace P2
 {
 	Time::Time() noexcept
-		: timeAsNanoseconds(0.f)
+		: timeAsNanoseconds(Nanoseconds::zero())
 	{
 
 	}
 
-	Time::Time(NumericType nanoseconds) noexcept
+	Time::Time(Nanoseconds nanoseconds) noexcept
 		: timeAsNanoseconds(nanoseconds)
 	{
 
 	}
 
-	Time& Time::operator=(NumericType nanoseconds) noexcept
+	Time& Time::operator=(Nanoseconds nanoseconds) noexcept
 	{
 		timeAsNanoseconds = nanoseconds;
 		return *this;
 	}
 
-	Time::NumericType Time::getAsNanoseconds() const noexcept
+	Time::Nanoseconds Time::getAsNanoseconds() const noexcept
 	{
 		return timeAsNanoseconds;
 	}
 
-	Time::NumericType Time::getAsMicroseconds() const noexcept
+	Time::Microseconds Time::getAsMicroseconds() const noexcept
 	{
-		return timeAsNanoseconds / NanosecondsInMicrosecond;
+		return std::chrono::duration_cast<std::chrono::microseconds>(timeAsNanoseconds);
 	}
 
-	Time::NumericType Time::getAsMilliseconds() const noexcept
+	Time::Milliseconds Time::getAsMilliseconds() const noexcept
 	{
-		return getAsMicroseconds() / MicrosecondsInMillisecond;
+		return std::chrono::duration_cast<std::chrono::milliseconds>(timeAsNanoseconds);
 	}
 
-	Time::NumericType Time::getAsSeconds() const noexcept
+	Time::Seconds Time::getAsSeconds() const noexcept
 	{
-		return getAsMilliseconds() / MillisecondsInSecond;
+		return std::chrono::duration_cast<std::chrono::seconds>(timeAsNanoseconds);
 	}
 
-	Time::NumericType Time::getAsMinutes() const noexcept
+	Time::Minutes Time::getAsMinutes() const noexcept
 	{
-		return getAsSeconds() / SecondsInMinute;
+		return std::chrono::duration_cast<std::chrono::minutes>(timeAsNanoseconds);
 	}
 
-	Time::NumericType Time::getAsHours() const noexcept
+	Time::Hours Time::getAsHours() const noexcept
 	{
-		return getAsMinutes() / MinutesInHour;
+		return std::chrono::duration_cast<std::chrono::hours>(timeAsNanoseconds);
 	}
 
-	Time Time::FromNanoseconds(NumericType nanoseconds) noexcept
+	Time Time::FromNanoseconds(Nanoseconds nanoseconds) noexcept
 	{
 		return Time(nanoseconds);
 	}
 
-	Time Time::FromMicroseconds(NumericType microseconds) noexcept
+	Time Time::FromMicroseconds(Microseconds microseconds) noexcept
 	{
-		return FromNanoseconds(microseconds * NanosecondsInMicrosecond);
+		return std::chrono::duration_cast<std::chrono::nanoseconds>(microseconds);
 	}
 
-	Time Time::FromMilliseconds(NumericType milliseconds) noexcept
+	Time Time::FromMilliseconds(Milliseconds milliseconds) noexcept
 	{
-		return FromMicroseconds(milliseconds * MicrosecondsInMillisecond);
+		return std::chrono::duration_cast<std::chrono::nanoseconds>(milliseconds);
 	}
 
-	Time Time::FromSeconds(NumericType seconds) noexcept
+	Time Time::FromSeconds(Seconds seconds) noexcept
 	{
-		return FromMilliseconds(seconds * MillisecondsInSecond);
+		return std::chrono::duration_cast<std::chrono::nanoseconds>(seconds);
 	}
 
-	Time Time::FromMinutes(NumericType minutes) noexcept
+	Time Time::FromMinutes(Minutes minutes) noexcept
 	{
-		return FromSeconds(minutes * SecondsInMinute);
+		return std::chrono::duration_cast<std::chrono::nanoseconds>(minutes);
 	}
 
-	Time Time::FromHours(NumericType hours) noexcept
+	Time Time::FromHours(Hours hours) noexcept
 	{
-		return FromMinutes(hours * SecondsInMinute);
+		return std::chrono::duration_cast<std::chrono::nanoseconds>(hours);
 	}
 
 }

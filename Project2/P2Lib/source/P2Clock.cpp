@@ -19,15 +19,9 @@ namespace P2
 	{
 		using Duration = std::chrono::duration<UnderlyingClock::rep, UnderlyingClock::period>;
 
-		thread_local UnderlyingClock::time_point actualTimePoint;
-		thread_local Duration difference;
-		thread_local Time::NumericType nanoseconds;
-		thread_local Time time;
-
-		actualTimePoint = UnderlyingClock::now();
-		difference = actualTimePoint - savedTimePoint;
-		nanoseconds = static_cast<float>(std::chrono::duration_cast<std::chrono::nanoseconds>(difference).count());
-		time = nanoseconds;
+		const auto difference = UnderlyingClock::now() - savedTimePoint;
+		const auto asNanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(difference);
+		Time time{ asNanoseconds };
 		return time;
 	}
 }

@@ -6,16 +6,17 @@
 
 namespace P2::tests
 {
+    using namespace std::chrono_literals;
 
     class TimeTests : public ::testing::Test
     {
     protected:
 
-        const Time::NumericType baseValue = 60000000000000.f;
+        const Time::Nanoseconds baseNanoseconds = 60000000000000ns;
         Time time;
 
         TimeTests()
-            : time(baseValue)
+            : time(baseNanoseconds)
         {
         }
 
@@ -28,120 +29,106 @@ namespace P2::tests
         void TearDown() override {
         }
 
+        static_assert(sizeof(Time) == 8);
     };
 
     TEST_F(TimeTests, AssignTest)
     {
-        Time::NumericType expectedValue = 69404.f;
+        const Time::Nanoseconds expectedValue = 69404ns;
         time = expectedValue;
     
-        Time::NumericType nanoseconds = time.getAsNanoseconds();
-    
-        ASSERT_FLOAT_EQ(expectedValue, nanoseconds);
+        const Time::Nanoseconds nanoseconds = time.getAsNanoseconds();
+        EXPECT_EQ(expectedValue, nanoseconds);
     }
     
     TEST_F(TimeTests, NanosecondsTest)
     {
-        Time::NumericType nanoseconds = time.getAsNanoseconds();
-        ASSERT_FLOAT_EQ(baseValue, nanoseconds);
+        const Time::Nanoseconds nanoseconds = time.getAsNanoseconds();
+        EXPECT_EQ(nanoseconds, baseNanoseconds);
     }
     
     TEST_F(TimeTests, MicrosecondsTest)
     {
-        Time::NumericType expectedValue = baseValue / 1000.f;
-        Time::NumericType microseconds = time.getAsMicroseconds();
-        ASSERT_FLOAT_EQ(expectedValue, microseconds);
+        Time::Microseconds microseconds = time.getAsMicroseconds();
     }
     
     TEST_F(TimeTests, MillisecondsTest)
     {
-        Time::NumericType expectedValue = baseValue / 1000.f / 1000.f;
-        Time::NumericType milliseconds = time.getAsMilliseconds();
-    
-        ASSERT_FLOAT_EQ(expectedValue, milliseconds);
+        Time::Milliseconds milliseconds = time.getAsMilliseconds();
     }
     
     TEST_F(TimeTests, SecondsTest)
     {
-        Time::NumericType expectedValue = baseValue / 1000.f / 1000.f / 1000.f;
-        Time::NumericType seconds = time.getAsSeconds();
-    
-        ASSERT_FLOAT_EQ(expectedValue, seconds);
+        Time::Seconds seconds = time.getAsSeconds();
     }
     
     TEST_F(TimeTests, MinutesTest)
     {
-        Time::NumericType expectedValue = baseValue / 1000.f / 1000.f / 1000.f / 60.f;
-        Time::NumericType minutes = time.getAsMinutes();
-    
-        ASSERT_FLOAT_EQ(expectedValue, minutes);
+        Time::Minutes minutes = time.getAsMinutes();
     }
     
     TEST_F(TimeTests, HoursTest)
     {
-        Time::NumericType expectedValue = baseValue / 1000.f / 1000.f / 1000.f / 60.f / 60.f;
-        Time::NumericType hours = time.getAsHours();
-    
-        ASSERT_FLOAT_EQ(expectedValue, hours);
+        Time::Hours hours = time.getAsHours();
     }
     
     TEST_F(TimeTests, FromNanoseconds)
     {
-        Time::NumericType expectedNanoseconds = 100.f;
-        Time actualTime = Time::FromNanoseconds(expectedNanoseconds);
-        Time::NumericType actualNanoseconds = actualTime.getAsNanoseconds();
+        const auto expectedNanoseconds = 100ns;
+        const Time actualTime = Time::FromNanoseconds(expectedNanoseconds);
+        const auto actualNanoseconds = actualTime.getAsNanoseconds();
     
-        ASSERT_FLOAT_EQ(expectedNanoseconds, actualNanoseconds);
+        ASSERT_EQ(expectedNanoseconds, actualNanoseconds);
     }
     
     TEST_F(TimeTests, FromMicroseconds)
     {
-        Time::NumericType expectedMicroseconds = 100.f;
-        Time actualTime = Time::FromMicroseconds(expectedMicroseconds);
-        Time::NumericType actualMicroseconds = actualTime.getAsMicroseconds();
+        const auto expectedMicroseconds = 100us;
+        const Time actualTime = Time::FromMicroseconds(expectedMicroseconds);
+        const auto actualMicroseconds = actualTime.getAsMicroseconds();
     
-        ASSERT_FLOAT_EQ(expectedMicroseconds, actualMicroseconds);
+        ASSERT_EQ(expectedMicroseconds, actualMicroseconds);
     }
     
     TEST_F(TimeTests, FromMilliseconds)
     {
-        Time::NumericType expectedMilliseconds = 100.f;
-        Time actualTime = Time::FromMilliseconds(expectedMilliseconds);
-        Time::NumericType actualMilliseconds = actualTime.getAsMilliseconds();
+        const auto expectedMilliseconds = 100ms;
+        const Time actualTime = Time::FromMilliseconds(expectedMilliseconds);
+        const auto actualMilliseconds = actualTime.getAsMilliseconds();
     
-        ASSERT_FLOAT_EQ(expectedMilliseconds, actualMilliseconds);
+        ASSERT_EQ(expectedMilliseconds, actualMilliseconds);
     }
     
     TEST_F(TimeTests, FromSeconds)
     {
-        Time::NumericType expectedSeconds = 100.f;
-        Time actualTime = Time::FromSeconds(expectedSeconds);
-        Time::NumericType actualSeconds = actualTime.getAsSeconds();
+        const auto expectedSeconds = 100s;
+        const Time actualTime = Time::FromSeconds(expectedSeconds);
+        const auto actualSeconds = actualTime.getAsSeconds();
     
-        ASSERT_FLOAT_EQ(expectedSeconds, actualSeconds);
+        ASSERT_EQ(expectedSeconds, actualSeconds);
     }
     
     TEST_F(TimeTests, FromMinutes)
     {
-        Time::NumericType expectedMinutes = 100.f;
-        Time actualTime = Time::FromMinutes(expectedMinutes);
-        Time::NumericType actualMinutes = actualTime.getAsMinutes();
+        const auto expectedMinutes = 100min;
+        const Time actualTime = Time::FromMinutes(expectedMinutes);
+        const auto actualMinutes = actualTime.getAsMinutes();
     
-        ASSERT_FLOAT_EQ(expectedMinutes, actualMinutes);
+        ASSERT_EQ(expectedMinutes, actualMinutes);
     }
     
     TEST_F(TimeTests, FromHours)
     {
-        Time::NumericType expectedHours = 100.f;
-        Time actualTime = Time::FromHours(expectedHours);
-        Time::NumericType actualHours = actualTime.getAsHours();
+        const auto expectedHours = 100h;
+        const Time actualTime = Time::FromHours(expectedHours);
+        const auto actualHours = actualTime.getAsHours();
     
-        ASSERT_FLOAT_EQ(expectedHours, actualHours);
+        ASSERT_EQ(expectedHours, actualHours);
 	}
 
 	TEST_F(TimeTests, CompareOperator)
 	{
-        Time otherTime{ 2323.f };
+        Time otherTime{ 2323ms };
         EXPECT_FALSE(time == otherTime);
 
 		otherTime = time;
@@ -150,43 +137,51 @@ namespace P2::tests
 
 	TEST_F(TimeTests, SubtractOperator)
 	{
-        time = Time::FromSeconds(1.f);
-        Time other = Time::FromSeconds(2.f);
+        time = Time::FromSeconds(1s);
+        Time other = Time::FromSeconds(2s);
 
         Time actual = other - time;
-        Time expected = Time::FromSeconds(1.f);
+        Time expected = Time::FromSeconds(1s);
         EXPECT_EQ(actual, expected);
 	}
 
 	TEST_F(TimeTests, SubtractAssignOperator)
 	{
-		time = Time::FromSeconds(1.f);
+		time = Time::FromSeconds(1s);
 
-        Time actual = Time::FromSeconds(2.f);
+        Time actual = Time::FromSeconds(2s);
         actual -= time;
 
-		Time expected = Time::FromSeconds(1.f);
+		Time expected = Time::FromSeconds(1s);
         EXPECT_EQ(actual, expected);
 	}
 
 	TEST_F(TimeTests, AddOperator)
 	{
-		time = Time::FromSeconds(1.f);
-		Time other = Time::FromSeconds(2.f);
+		time = Time::FromSeconds(1s);
+		Time other = Time::FromSeconds(2s);
 
 		Time actual = other + time;
-		Time expected = Time::FromSeconds(3.f);
+		Time expected = Time::FromSeconds(3s);
         EXPECT_EQ(actual, expected);
 	}
 
 	TEST_F(TimeTests, AddAssignOperator)
 	{
-		time = Time::FromSeconds(1.f);
+		time = Time::FromSeconds(1s);
 
-		Time actual = Time::FromSeconds(2.f);
+		Time actual = Time::FromSeconds(2s);
 		actual += time;
 
-		Time expected = Time::FromSeconds(3.f);
+		Time expected = Time::FromSeconds(3s);
         EXPECT_EQ(actual, expected);
 	}
+
+    TEST_F(TimeTests, From)
+    {
+        const auto Expected = Time(5ns);
+        const auto Time = Time::From(5ns);
+
+        EXPECT_EQ(Expected, Time);
+    }
 }

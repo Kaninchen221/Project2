@@ -31,17 +31,19 @@ namespace P2::tests
         Clock clock;
     };
 
+    using namespace std::chrono_literals;
+
     TEST_F(ClockTests, StartTest)
     {
-        Time::NumericType greaterThan = 0u;
-        Time::NumericType lessThan = 1000u;
+        const auto greaterThan = 0us;
+        const auto lessThan = 1000us;
 
 		clock.start();
 
-		while (clock.getElapsedTime().getAsMicroseconds() == 0) {}
+		while (clock.getElapsedTime().getAsMicroseconds() == 0us) {}
 
-        Time time = clock.getElapsedTime();
-        Time::NumericType microseconds = time.getAsMicroseconds();
+        const auto time = clock.getElapsedTime();
+        const auto microseconds = time.getAsMicroseconds();
 
         ASSERT_GT(microseconds, greaterThan);
         ASSERT_LT(microseconds, lessThan);
@@ -49,15 +51,15 @@ namespace P2::tests
 
     TEST_F(ClockTests, RestartTest)
     {
+        const auto greaterThan = 0us;
+        const auto lessThan = 1000us;
+
 		clock.start();
 
-		Time::NumericType greaterThan = 0u;
-		Time::NumericType lessThan = 1000u;
+        while (clock.getElapsedTime().getAsMicroseconds() == 0us) {}
 
-        while (clock.getElapsedTime().getAsMicroseconds() == 0) {}
-
-        Time time = clock.restart();
-        Time::NumericType microseconds = time.getAsMicroseconds();
+        const auto time = clock.restart();
+        const auto microseconds = time.getAsMicroseconds();
 
         ASSERT_GT(microseconds, greaterThan);
         ASSERT_LT(microseconds, lessThan);

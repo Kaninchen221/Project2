@@ -23,7 +23,7 @@ namespace P2
 		bool deinitialize();
 
 		bool loop();
-		void loopStep(const Time& DeltaTime);
+		void loopStep(const Time& deltaTime);
 
 		void requestClose();
 
