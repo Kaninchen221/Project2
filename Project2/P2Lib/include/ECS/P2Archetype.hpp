@@ -99,7 +99,7 @@ namespace P2::ecs
 	{
 		using ReturnT = std::conditional_t<IsSelfConst<decltype(self)>(), const Component, Component>;
 
-		auto components = self.getComponentsOfType<Component>();
+		auto components = self.template getComponentsOfType<Component>();
 		if (!components)
 			return static_cast<ReturnT*>(nullptr);
 

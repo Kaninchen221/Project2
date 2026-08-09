@@ -141,7 +141,7 @@ namespace P2::ecs
 			}
 			else
 			{
-				archetypes = world.getArchetypesWith<Components...>();
+				archetypes = world.template getArchetypesWith<Components...>();
 			}
 		}
 
