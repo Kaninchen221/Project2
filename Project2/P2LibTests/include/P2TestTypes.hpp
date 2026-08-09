@@ -88,7 +88,7 @@ namespace P2::tests
 	// Component/Resource with not trivial data
 	class NotTrivialType
 	{
-		inline static auto Logger = spdlog::stdout_color_mt("P2::ecs::tests::NotTrivialType");
+		inline static auto Logger = ConsoleLogger::CreateOrGet("P2::ecs::tests::NotTrivialType");
 		
 		inline static int32_t ObjectsCounter = 0;
 

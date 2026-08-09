@@ -6,6 +6,7 @@
 #include "ECS/P2Query.hpp"
 
 #include "P2TestTypes.hpp"
+#include "P2GTestFailureSink.hpp"
 
 #include "P2ExitReason.hpp"
 #include "P2Utils.hpp"
@@ -325,13 +326,12 @@ namespace P2::ecs::tests
 		Schedule schedule;
 
 		// Ignore Logger 
-		FAIL() << "Add ignoring log errors";
-		//P2::SimpleCallbackSink::SetIgnoreLog(true);
+		P2::tests::GTestFailureSink<>::SetIgnoreLog(true);
 
 		// Schedule shouldn't run a system that expect a resource when the world doesn't have it
-		//schedule.runOneSystemOnce(SystemTest_1{}, FailSystemTest::ExpectPositionAlwaysFailing, world);
+		schedule.runOneSystemOnce(SystemTest_1{}, FailSystemTest::ExpectPositionAlwaysFailing, world);
 
-		//SimpleCallbackSink::SetIgnoreLog(false);
+		P2::tests::GTestFailureSink<>::SetIgnoreLog(false);
 	}
 
 	// TODO: Test a situation when we have a lot of systems that can be run at the same time

@@ -12,7 +12,7 @@ namespace P2::ecs
 {
 	class P2_API World
 	{
-		inline static auto Logger = spdlog::stdout_color_mt("P2::ecs::World");
+		inline static auto Logger = ConsoleLogger::CreateOrGet("P2::ecs::World");
 
 	public:
 

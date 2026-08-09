@@ -113,8 +113,7 @@ namespace P2::ecs
 	template<class IsConstType, class... Components>
 	class QueryImpl
 	{
-		/// TODO Create P2::ConsoleLogger::CreateOrGet(...)
-		inline static auto Logger = spdlog::stdout_color_mt("P2::ecs::Query");
+		inline static auto Logger = ConsoleLogger::CreateOrGet("P2::ecs::Query");
 
 		QueryImpl() noexcept = default;
 

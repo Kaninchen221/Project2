@@ -3,6 +3,7 @@
 #include "P2LibConfig.hpp"
 #include "P2FunctionTraits.hpp"
 #include "P2Time.hpp"
+#include "P2Logger.hpp"
 
 #include "ECS/P2World.hpp"
 
@@ -95,7 +96,7 @@ namespace P2::ecs
 
 	class P2_API Schedule
 	{
-		inline static auto Logger = spdlog::stdout_color_mt("P2::ecs::Schedule");
+		inline static auto Logger = ConsoleLogger::CreateOrGet("P2::ecs::Schedule");
 
 	public:
 

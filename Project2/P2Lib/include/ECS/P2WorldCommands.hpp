@@ -14,7 +14,7 @@ namespace P2::ecs
 
 	class P2_API WorldCommands
 	{
-		inline static auto Logger = spdlog::stdout_color_mt("P2::ecs::WorldCommands");
+		inline static auto Logger = ConsoleLogger::CreateOrGet("P2::ecs::WorldCommands");
 
 	public:
 

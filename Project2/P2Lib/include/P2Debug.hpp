@@ -1,6 +1,7 @@
 #pragma once
 
 #include "P2LibConfig.hpp"
+#include "P2Logger.hpp"
 
 #include <exception>
 
@@ -32,7 +33,7 @@ namespace P2
 
 		if (shouldEnsure)
 		{
-			static auto Logger = spdlog::stdout_color_mt("Ensure");
+			static auto Logger = ConsoleLogger::CreateOrGet("Ensure");
 			Logger->error(message);
 		}
 

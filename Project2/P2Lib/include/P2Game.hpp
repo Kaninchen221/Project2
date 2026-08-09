@@ -2,6 +2,7 @@
 
 #include "P2LibConfig.hpp"
 #include "P2Clock.hpp"
+#include "P2Logger.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 
@@ -12,7 +13,7 @@ namespace P2
 	/// Always after looping call deinitialize
 	class P2_API Game
 	{
-		inline static auto Logger = spdlog::stdout_color_mt("Game");
+		inline static auto Logger = ConsoleLogger::CreateOrGet("Game");
 
 	public:
 
