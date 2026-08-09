@@ -286,7 +286,7 @@ namespace P2::tests
 		TypeLessVector vector = TypeLessVector::Create<Sprite>();
 		for ([[maybe_unused]] auto rawPtr : vector)
 		{
-			FAIL() << "We shouldn't enter this block because the vector should be empty";
+			ASSERT_TRUE(false); // "We shouldn't enter this block because the vector should be empty";
 		}
 	}
 }
