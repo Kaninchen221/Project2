@@ -24,6 +24,7 @@ namespace P2
 			if (requestedClose)
 			{
 				window.close();
+				break;
 			}
 		}
 
