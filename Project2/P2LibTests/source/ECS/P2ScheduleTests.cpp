@@ -294,10 +294,10 @@ namespace P2::ecs::tests
 
 		for (auto& node : layer.nodes)
 		{
-#	if ZINET_TIME_TRACE
-			ASSERT_NE(node.executeTime, 0);
+#	if P2_TIME_TRACE
+			ASSERT_NE(node.executeTime, 0ns);
 #	else
-			ASSERT_EQ(node.executeTime, 0ns); // Don't measure the execute time if ZINET_TIME_TRACE is false
+			ASSERT_EQ(node.executeTime, 0ns); // Don't measure the execute time if P2_TIME_TRACE is false
 #	endif
 		}
 	}

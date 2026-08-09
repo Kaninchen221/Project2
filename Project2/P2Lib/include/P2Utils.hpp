@@ -86,7 +86,7 @@ namespace P2
 	{
 		using T = std::remove_cvref_t<Type>;
 
-#	if ZINET_WINDOWS
+#	if P2_WINDOWS
 		auto& typeInfo = typeid(T);
 
 		std::string rawName = typeInfo.name();
@@ -96,6 +96,6 @@ namespace P2
 		return result;
 #	else
 		assert(false); // Not implemented
-#endif
+#	endif // P2_WINDOWS
 	}
 }

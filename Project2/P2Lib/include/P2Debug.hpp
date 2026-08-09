@@ -7,7 +7,7 @@
 
 #if P2_MSVC
 	#include <intrin.h>
-#endif // ZINET_MSVC
+#endif // P2_MSVC
 
 namespace P2
 {
@@ -42,9 +42,9 @@ namespace P2
 #else
 	static inline bool Ensure(bool Value) { return Value; }
 	static inline bool Ensure(bool Value, const char* /*message*/) { return Value; }
-#endif // ZINET_DEBUG
+#endif // P2_DEBUG
 
-#if ZINET_DEBUG
+#if P2_DEBUG
 	[[noreturn]] inline static void TerminateDebug() noexcept
 	{
 		std::terminate();
@@ -58,7 +58,7 @@ namespace P2
 #else
 	inline static void TerminateDebug() noexcept {}
 	inline static void TerminateDebug([[maybe_unused]] bool ShouldTerminate) noexcept {}
-#endif // ZINET_DEBUG
+#endif // P2_DEBUG
 
 	[[noreturn]] inline static void Terminate() noexcept { std::terminate(); }
 }

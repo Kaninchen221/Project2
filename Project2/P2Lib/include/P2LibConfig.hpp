@@ -26,6 +26,8 @@
 /// Empty because we suppport only "Static" lib
 #	define P2_API
 
+#	define P2_TIME_TRACE P2_DEBUG
+
 #endif
 
 /// It's used in 99% headers

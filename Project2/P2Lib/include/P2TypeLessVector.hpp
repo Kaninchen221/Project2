@@ -49,6 +49,8 @@ namespace P2
 
 	class TypeLessVector
 	{
+		inline static auto Logger = ConsoleLogger::CreateOrGet("P2::ecs::TypeLessVector");
+
 	public:
 
 		TypeLessVector() noexcept = delete;
@@ -169,13 +171,12 @@ namespace P2
 	{
 		using Object = std::decay_t<T>;
 
-#	if ZINET_SANITY_CHECK
 		if (typeID != GetTypeID<Object>())
 		{
-			Ensure(false); // Tried to add component of different type
+			Logger->error("TypeLessVector::add: Type mismatch. Expected typeID: {}, but got typeID: {}", typeID, GetTypeID<Object>());
+			Ensure(false); 
 			return InvalidIndex;
 		}
-#	endif
 
 		size_t byteIndex = InvalidIndex;
 		size_t objectIndex = InvalidIndex;
@@ -231,13 +232,14 @@ namespace P2
 
 		const size_t offset = index * typeSize;
 
-#	if ZINET_SANITY_CHECK
+#	if P2_DEBUG
 		if (offset + typeSize > buffer.size())
 		{
+			Logger->error("TypeLessVector::get: Invalid offset. Index: {}, Offset: {}", index, offset);
 			Ensure(false); // Invalid offset
 			return static_cast<ReturnT>(nullptr);
 		}
-#	endif
+#	endif // P2_DEBUG
 
 		return reinterpret_cast<ReturnT>(buffer.data() + offset);
 	}

@@ -1,5 +1,7 @@
 #include "ECS/P2Schedule.hpp"
 
+#include "P2Clock.hpp"
+
 #include <ranges>
 
 namespace P2::ecs
@@ -253,7 +255,7 @@ namespace P2::ecs
 						threads.push_back(
 						std::jthread([&node = node, &world = world]()
 						{
-#						if ZINET_TIME_TRACE
+#						if P2_TIME_TRACE
 							Clock clock;
 #						endif
 
@@ -261,7 +263,7 @@ namespace P2::ecs
 							if (systemAdapter)
 								systemAdapter(world);
 
-#						if ZINET_TIME_TRACE
+#						if P2_TIME_TRACE
 							node.executeTime = clock.getElapsedTime();
 #						endif
 						})
@@ -269,7 +271,7 @@ namespace P2::ecs
 					}
 					else
 					{
-#					if ZINET_TIME_TRACE
+#					if P2_TIME_TRACE
 						Clock clock;
 #					endif
 
@@ -277,7 +279,7 @@ namespace P2::ecs
 						if (systemAdapter)
 							systemAdapter(world);
 
-#					if ZINET_TIME_TRACE
+#					if P2_TIME_TRACE
 						node.executeTime = clock.getElapsedTime();
 #					endif
 					}
