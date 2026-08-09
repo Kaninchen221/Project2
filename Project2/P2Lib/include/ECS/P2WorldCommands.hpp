@@ -7,7 +7,7 @@
 namespace P2::ecs
 {
 	// WorldCommands doesn't support non-movable classes (It's WIP, TODO)
-	// TODO: WorldCommands
+	// TODO (high): WorldCommands
 	// - spawn and addResource must support:
 	//   - r-value and const and non const l-value (review tests)
 	// - Omit using shared_ptr and other dynamic allocations
@@ -72,7 +72,7 @@ namespace P2::ecs
 		// Resources are unique by type
 		// User can't remove resources
 
-		// TODO: Add param to define if the resource is open to public or it's private 
+		// TODO (mid): Add param to define if the resource is open to public or it's private 
 		// - Public: Any system can edit it (default)
 		// - Private: Only the owner can edit it but everybody else can read it
 		template<class ResourceT>

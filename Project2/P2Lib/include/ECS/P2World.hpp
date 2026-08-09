@@ -31,9 +31,10 @@ namespace P2::ecs
 		World& operator = (const World& other) noexcept = default;
 		World& operator = (World&& other) noexcept = default;
 
-		// TODO: Write optimized methods that will allow to spawn enormous amount of entities at once
+		// TODO (high): Write optimized methods that will allow to spawn enormous amount of entities at once
+		// It's high, because it's impacting highly performace
 
-		// TODO: Add check that will block adding more than one component of the same type in one entity OR
+		// TODO (low): Add check that will block adding more than one component of the same type in one entity OR
 		// Handle this situation but this is not easy and easier way is just making an another struct that will pack doubled components
 		// into one structure
 		/// Entities & Components
