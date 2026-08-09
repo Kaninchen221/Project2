@@ -5,9 +5,6 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-
 namespace P2
 {
 	/// Always call one time initialize before calling any loop method
