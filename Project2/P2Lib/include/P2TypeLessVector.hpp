@@ -171,10 +171,15 @@ namespace P2
 	{
 		using Object = std::decay_t<T>;
 
+		constexpr bool IsCopyConstructible = std::is_copy_constructible_v<Object>;
+		constexpr bool IsMoveConstructible = std::is_move_constructible_v<Object>;
+
+		static_assert(IsCopyConstructible || IsMoveConstructible, "TypeLessVector::add: Object must be copy or move constructible.");
+
 		if (typeID != GetTypeID<Object>())
 		{
 			Logger->error("TypeLessVector::add: Type mismatch. Expected typeID: {}, but got typeID: {}", typeID, GetTypeID<Object>());
-			Ensure(false); 
+			Ensure(false);
 			return InvalidIndex;
 		}
 
@@ -199,8 +204,16 @@ namespace P2
 		objectsCapacity = buffer.size() / typeSize;
 		++objectsCount;
 
-		Object& storedObject = reinterpret_cast<Object&>(buffer[byteIndex]);
-		std::construct_at(&storedObject, std::forward<Object>(object));
+		Object* location = reinterpret_cast<Object*>(&buffer[byteIndex]);
+
+		if constexpr (IsMoveConstructible)
+		{
+			std::construct_at<Object, T&&>(location, std::forward<T>(object));
+		}
+		else if (IsCopyConstructible)
+		{
+			std::construct_at<Object, const T&>(location, std::forward<T>(object));
+		}
 
 		return objectIndex;
 	}

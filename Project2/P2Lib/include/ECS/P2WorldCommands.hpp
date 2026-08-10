@@ -25,7 +25,7 @@ namespace P2::ecs
 		WorldCommands(WorldCommands&& other) noexcept = default;
 		~WorldCommands() noexcept
 		{
-			world.addCommands(commands);
+			world.addCommands(std::move(commands));
 		}
 
 		WorldCommands& operator = (const WorldCommands& other) noexcept = default;
@@ -80,12 +80,12 @@ namespace P2::ecs
 		{
 			using Type = std::remove_cvref_t<ResourceT>;
 
-			auto command = [resourceAsPtr = std::make_shared<Type>(std::move(resource))](World& world)
+			auto command = [resource = std::forward<ResourceT>(resource)](World& world) mutable
 			{
-				world.addResource(std::move(*resourceAsPtr));
+				world.addResource(std::forward<ResourceT>(resource));
 			};
 
-			commands.push_back(std::move(command));
+			commands.push_back(std::move(World::Command{ std::move(command) }));
 		}
 
 	protected:

@@ -16,7 +16,7 @@ namespace P2::ecs
 
 	public:
 
-		using Command = std::function<void(World&)>;
+		using Command = std::move_only_function<void(World&)>;
 		using Commands = std::vector<Command>;
 
 		World() noexcept = default;
@@ -73,8 +73,8 @@ namespace P2::ecs
 		bool hasResource(TypeID) const;
 
 		/// Commands
-		// Would be nice to completly omit mutexes
-		void addCommands(const Commands& newCommands) 
+		// TODO (low) Would be nice to completly omit mutexes
+		void addCommands(Commands&& newCommands) 
 		{ 
 			std::lock_guard guard{ addCommandsMutex };
 
@@ -176,6 +176,8 @@ namespace P2::ecs
 		return archetype.add(entity, std::forward<Components>(components)...);
 	}
 
+	// TODO (low): Create addOrGetResource
+
 	template<class ResourceT>
 	auto* World::addResource(ResourceT&& newResource)
 	{
@@ -190,7 +192,7 @@ namespace P2::ecs
 		}
 
 		auto& typeLessVector = resources.emplace_back(TypeLessVector::Create<Resource>());
-		typeLessVector.add(newResource);
+		typeLessVector.add(std::forward<ResourceT>(newResource));
 
 		return typeLessVector.get<Resource>(0);
 	}

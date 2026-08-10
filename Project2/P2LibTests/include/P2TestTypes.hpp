@@ -247,15 +247,16 @@ namespace P2::tests
 
 	class NonCopyableClass
 	{
+		NonCopyableClass(const NonCopyableClass& other) noexcept = delete;
+		NonCopyableClass& operator = (const NonCopyableClass& other) = delete;
+
 	public:
 		explicit NonCopyableClass(int value) : value{ value } {}
 
 		NonCopyableClass() noexcept = default;
-		NonCopyableClass(const NonCopyableClass& other) noexcept = delete;
-		NonCopyableClass(NonCopyableClass&& other) noexcept = default;
+		NonCopyableClass(NonCopyableClass&& other) noexcept { *this = std::move(other); };
 
-		NonCopyableClass& operator = (const NonCopyableClass& other) = delete;
-		NonCopyableClass& operator = (NonCopyableClass&& other) noexcept = default;
+		NonCopyableClass& operator = (NonCopyableClass&& other) noexcept { value = other.value; other.value = 0; return *this; }
 		~NonCopyableClass() noexcept = default;
 
 		int value = 0;
@@ -267,10 +268,10 @@ namespace P2::tests
 		explicit TrivialClass(int value) : value{ value } {}
 
 		TrivialClass() noexcept = default;
-		TrivialClass(const TrivialClass& other) noexcept = delete;
+		TrivialClass(const TrivialClass& other) noexcept = default;
 		TrivialClass(TrivialClass&& other) noexcept = default;
 
-		TrivialClass& operator = (const TrivialClass& other) = delete;
+		TrivialClass& operator = (const TrivialClass& other) = default;
 		TrivialClass& operator = (TrivialClass&& other) noexcept = default;
 		~TrivialClass() noexcept = default;
 
@@ -283,10 +284,10 @@ namespace P2::tests
 		explicit NonTrivialClass(int value) : value{ value } {}
 
 		NonTrivialClass() noexcept = default;
-		NonTrivialClass(const NonTrivialClass& other) noexcept = delete;
+		NonTrivialClass(const NonTrivialClass& other) noexcept = default;
 		NonTrivialClass(NonTrivialClass&& other) noexcept = default;
 
-		NonTrivialClass& operator = (const NonTrivialClass& other) = delete;
+		NonTrivialClass& operator = (const NonTrivialClass& other) = default;
 		NonTrivialClass& operator = (NonTrivialClass&& other) noexcept = default;
 		~NonTrivialClass() noexcept = default;
 

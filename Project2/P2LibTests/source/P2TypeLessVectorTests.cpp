@@ -214,12 +214,13 @@ namespace P2::tests
 			constexpr size_t count = 10;
 			for (size_t i = 0; i < count; ++i)
 			{
-				Type complex;
-				complex.name = expectedName;
-				complex.data = expectedData;
-				complex.description = expectedDescription;
+				Type object;
+				object.name = expectedName;
+				object.data = expectedData;
+				object.description = expectedDescription;
 
-				componentIndex = vector.add(complex);
+				/// Passed param type is not copyable so we need to move it
+				componentIndex = vector.add(std::move(object));
 				ASSERT_NE(componentIndex, InvalidIndex);
 			}
 
