@@ -265,7 +265,7 @@ namespace P2::tests
 		const std::vector<int> expectedIds = { 1, 3, 4 };
 		ASSERT_EQ(vector.getObjectsCount(), expectedIds.size());
 
-		// TODO (mid): Template iterators so we can skip reinterpret cast in the loop
+		// TODO (mid): Simplify this loop
 		TypeLessVectorIterator it = vector.begin();
 		TypeLessVectorIterator end = vector.end();
 		size_t idIndex = 0;
