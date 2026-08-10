@@ -12,40 +12,46 @@ namespace P2
 {
 	class TypeLessVector;
 
-	class TypeLessVectorIterator
+	template<bool IsConst>
+	class TypeLessVectorIteratorImpl
 	{
 	public:
 
-		TypeLessVectorIterator(TypeLessVector* vector, size_t startingIndex = 0) noexcept
+		using Vector = std::conditional_t<IsConst, const TypeLessVector*, TypeLessVector*>;
+
+		TypeLessVectorIteratorImpl(Vector vector, size_t startingIndex = 0) noexcept
 			: vector(vector), currentIndex(startingIndex)
 		{
 			if (!Ensure(vector))
 				Terminate();
 		}
 
-		TypeLessVectorIterator() noexcept = delete;
-		TypeLessVectorIterator(const TypeLessVectorIterator& other) noexcept = default;
-		TypeLessVectorIterator(TypeLessVectorIterator&& other) noexcept = default;
+		TypeLessVectorIteratorImpl() noexcept = delete;
+		TypeLessVectorIteratorImpl(const TypeLessVectorIteratorImpl<IsConst>& other) noexcept = default;
+		TypeLessVectorIteratorImpl(TypeLessVectorIteratorImpl<IsConst>&& other) noexcept = default;
 
-		TypeLessVectorIterator& operator = (const TypeLessVectorIterator& other) noexcept = default;
-		TypeLessVectorIterator& operator = (TypeLessVectorIterator&& other) noexcept = default;
+		TypeLessVectorIteratorImpl<IsConst>& operator = (const TypeLessVectorIteratorImpl<IsConst>& other) noexcept = default;
+		TypeLessVectorIteratorImpl<IsConst>& operator = (TypeLessVectorIteratorImpl<IsConst>&& other) noexcept = default;
 
-		~TypeLessVectorIterator() noexcept = default;
+		~TypeLessVectorIteratorImpl() noexcept = default;
 
-		bool operator == (const TypeLessVectorIterator& other) const noexcept;
+		bool operator == (const TypeLessVectorIteratorImpl<IsConst>& other) const noexcept;
 
-		bool operator != (const TypeLessVectorIterator& other) const noexcept;
+		bool operator != (const TypeLessVectorIteratorImpl<IsConst>& other) const noexcept;
 
-		TypeLessVectorIterator& operator ++ () noexcept;
+		TypeLessVectorIteratorImpl<IsConst>& operator ++ () noexcept;
 
-		void* operator * () const noexcept;
+		auto* operator * (this auto& self) noexcept;
 
 	private:
 
-		TypeLessVector* vector{};
+		Vector vector{};
 		size_t currentIndex = 0;
 
 	};
+
+	using TypeLessVectorIterator = TypeLessVectorIteratorImpl<false>;
+	using TypeLessVectorConstIterator = TypeLessVectorIteratorImpl<true>;
 
 	class TypeLessVector
 	{
@@ -88,11 +94,15 @@ namespace P2
 
 		bool remove(size_t index);
 
+		template<class T, class F = void(*)(T&)>
+		bool apply(this auto& self, F f);
+
 		template<class T>
 		auto get(this auto& self, size_t index);
 
 		// The returned pointer can point to a removed object
 		void* getPtr(size_t index) noexcept { return buffer.data() + (index * typeSize); }
+		const void* getPtr(size_t index) const noexcept { return buffer.data() + (index * typeSize); }
 
 		bool isValidIndex(size_t index) const noexcept;
 
@@ -116,6 +126,9 @@ namespace P2
 
 		TypeLessVectorIterator begin() noexcept;
 		TypeLessVectorIterator end() noexcept;
+
+		TypeLessVectorConstIterator cbegin() const noexcept;
+		TypeLessVectorConstIterator cend() const noexcept;
 
 		const void* data() const noexcept { return buffer.data(); }
 
@@ -148,6 +161,37 @@ namespace P2
 
 namespace P2
 {
+	template<bool IsConst>
+	bool TypeLessVectorIteratorImpl<IsConst>::operator==(const TypeLessVectorIteratorImpl<IsConst>& other) const noexcept
+	{
+		return vector == other.vector && currentIndex == other.currentIndex;
+	}
+
+	template<bool IsConst>
+	bool TypeLessVectorIteratorImpl<IsConst>::operator!=(const TypeLessVectorIteratorImpl<IsConst>& other) const noexcept
+	{
+		return !operator==(other);
+	}
+
+	template<bool IsConst>
+	TypeLessVectorIteratorImpl<IsConst>& TypeLessVectorIteratorImpl<IsConst>::operator++() noexcept
+	{
+		do
+		{
+			currentIndex++;
+		} while (!vector->isValidIndex(currentIndex) && currentIndex < vector->getLastIndex() + 1);
+
+		return *this;
+	}
+
+	template<bool IsConst>
+	auto* TypeLessVectorIteratorImpl<IsConst>::operator*(this auto& self) noexcept
+	{
+		using ReturnT = std::conditional_t<IsConst, const void*, void*>;
+
+		return ReturnT{ self.vector->getPtr(self.currentIndex) };
+	}
+
 	template<class T>
 	TypeLessVector TypeLessVector::Create()
 	{
@@ -216,6 +260,34 @@ namespace P2
 		}
 
 		return objectIndex;
+	}
+
+	template<class T, class F>
+	inline bool TypeLessVector::apply(this auto& self, F f)
+	{
+		using Type = std::remove_reference_t<T>;
+
+		if (GetTypeID<Type>() != self.getTypeID())
+		{
+			return false;
+		}
+
+		constexpr bool IsSelfConstV = std::is_const_v<std::remove_reference_t<decltype(self)>>;
+		auto it = [&self = self]() { if constexpr (IsSelfConstV) { return self.cbegin(); } else { return self.begin(); } }();
+		auto end = [&self = self]() { if constexpr (IsSelfConstV) { return self.cend(); } else { return self.end(); } }();
+
+		for (it; it != end; ++it)
+		{
+			auto& element = 
+				[](auto rawPtr) -> auto&
+				{ 
+					if constexpr (IsSelfConstV) { return *reinterpret_cast<const Type*>(rawPtr); } else { return *reinterpret_cast<Type*>(rawPtr); } 
+				}(*it);
+
+			std::invoke(f, element);
+		}
+
+		return true;
 	}
 
 	template<class T>

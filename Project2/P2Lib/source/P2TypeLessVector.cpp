@@ -2,32 +2,6 @@
 
 namespace P2
 {
-	bool TypeLessVectorIterator::operator==(const TypeLessVectorIterator& other) const noexcept
-	{
-		return vector == other.vector && currentIndex == other.currentIndex;
-	}
-
-	bool TypeLessVectorIterator::operator!=(const TypeLessVectorIterator& other) const noexcept
-	{
-		return !operator==(other);
-	}
-
-	TypeLessVectorIterator& TypeLessVectorIterator::operator++() noexcept
-	{
-		do
-		{
-			currentIndex++;
-		} 
-		while (!vector->isValidIndex(currentIndex) && currentIndex < vector->getLastIndex() + 1);
-
-		return *this;
-	}
-
-	void* TypeLessVectorIterator::operator*() const noexcept
-	{
-		return vector->getPtr(currentIndex);
-	}
-
 	TypeLessVector::~TypeLessVector() noexcept
 	{
 		clear();
@@ -117,4 +91,16 @@ namespace P2
 		return TypeLessVectorIterator{ this, getLastIndex() + 1 };
 	}
 
+	TypeLessVectorConstIterator TypeLessVector::cbegin() const noexcept
+	{
+		if (isEmpty())
+			return cend();
+
+		return TypeLessVectorConstIterator{ this, getFirstValidIndex() };
+	}
+
+	TypeLessVectorConstIterator TypeLessVector::cend() const noexcept
+	{
+		return TypeLessVectorConstIterator{ this, getLastIndex() + 1 };
+	}
 }
