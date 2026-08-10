@@ -138,6 +138,13 @@ namespace P2::ecs
 
 		auto& getGraph() const noexcept { return graph; }
 
+		/// Every system in the same layer is run in parallel (if it's not marked as 'MainThread') and after all systems in the layer are finished then queued world commands are executed
+		/// 
+		/// Visualization:
+		/// layer 0 -> run queued world commands -> layer 1 -> run queued world commands -> layer 2 -> run queued world commands -> ...
+		/// system                               -> system                               -> system                               -> system
+		/// system                               -> system                               -> system                               -> system
+		/// system                               -> system                               -> system                               -> system
 		void runOnce(World& world);
 
 		template<class LabelT, class SystemT>

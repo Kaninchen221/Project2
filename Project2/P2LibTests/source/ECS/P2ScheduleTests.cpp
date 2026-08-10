@@ -222,6 +222,28 @@ namespace P2::ecs::tests
 		EXPECT_EQ(layers[2].nodes[0].typeID, GetTypeID<SystemTest_3>());
 	}
 
+	TEST_F(ECSScheduleTests, SpawnComponentExpectComponentTest)
+	{
+		Schedule schedule;
+
+		schedule.addSystem(SystemTest_1{}, AddComponentSystemTest::AddPosition, Before{ SystemTest_2{} });
+		schedule.addSystem(SystemTest_2{}, ExpectComponentSystemTest::ExpectPosition);
+
+		schedule.buildGraph();
+		schedule.resolveGraph();
+
+		const auto& graph = schedule.getGraph();
+		// We expect that both systems are in different layers
+		ASSERT_EQ(graph.layers.size(), 2);
+
+		World world;
+		schedule.runOnce(world);
+
+		auto exitReasonRes = world.getResource<ExitReason>();
+		ASSERT_TRUE(exitReasonRes);
+		EXPECT_EQ(exitReasonRes->level, ExitReason::Info);
+	}
+
 	TEST_F(ECSScheduleTests, AddResourceExpectResourceTest)
 	{
 		Schedule schedule;
@@ -247,11 +269,11 @@ namespace P2::ecs::tests
 		}
 
 		World world;
-
 		schedule.runOnce(world);
 
 		auto exitReasonRes = world.getResource<ExitReason>();
 		ASSERT_TRUE(exitReasonRes);
+		EXPECT_EQ(exitReasonRes->level, ExitReason::Info);
 	}
 
 	TEST_F(ECSScheduleTests, TypeInfoTest)

@@ -6,12 +6,6 @@
 
 namespace P2::ecs
 {
-	// WorldCommands doesn't support non-movable classes (It's WIP, TODO)
-	// TODO (high): WorldCommands
-	// - spawn and addResource must support:
-	//   - r-value and const and non const l-value (review tests)
-	// - Omit using shared_ptr and other dynamic allocations
-
 	class P2_API WorldCommands
 	{
 		inline static auto Logger = ConsoleLogger::CreateOrGet("P2::ecs::WorldCommands");
@@ -36,27 +30,15 @@ namespace P2::ecs
 		void spawn(Components&&... components)
 		{
 			auto asTuple = std::tuple(std::forward<Components>(components)...);
-			using TupleT = decltype(asTuple);
-
-			std::shared_ptr<TupleT> tupleAsSharedPtr;
-
-			if constexpr (std::is_copy_constructible_v<TupleT>)
-			{
-				tupleAsSharedPtr = std::make_shared<decltype(asTuple)>(asTuple);
-			}
-			else if (std::is_move_constructible_v<TupleT>)
-			{
-				tupleAsSharedPtr = std::make_shared<decltype(asTuple)>(std::move(asTuple));
-			}
 
 			auto command = 
-			[components = tupleAsSharedPtr]
+			[components = std::move(asTuple)]
 			(World& world) mutable
 			{
 				std::apply([&](auto&&... args) 
 				{
 					world.spawn(std::forward<decltype(args)>(args)...);
-				}, *components);
+				}, components);
 			};
 
 			commands.push_back(command);

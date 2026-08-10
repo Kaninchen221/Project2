@@ -191,6 +191,38 @@ namespace P2::tests
 		static void EntryPoint(ecs::ConstQuery<Position, Velocity, Sprite>) {}
 	};
 
+	class AddComponentSystemTest
+	{
+	public:
+		static void AddPosition(ecs::WorldCommands worldCommands)
+		{
+			worldCommands.spawn(Position{});
+		}
+	};
+
+	class ExpectComponentSystemTest
+	{
+	public:
+		static void ExpectPosition(ecs::ConstQuery<Position> positions, ecs::WorldCommands worldCommands)
+		{
+			if (positions.isEmpty())
+			{
+				ExitReason exitReason
+				{
+					.reason = "Expected non empty query",
+					.level = ExitReason::Level::Error
+				};
+
+				worldCommands.addResource(exitReason);
+			}
+			else
+			{
+				ExitReason exitReason{ "", ExitReason::Info };
+				worldCommands.addResource(exitReason);
+			}
+		}
+	};
+
 	class AddResourceSystemTest
 	{
 	public:
@@ -209,14 +241,16 @@ namespace P2::tests
 			{
 				ExitReason exitReason
 				{
-					.reason = "Expected valid resource of class Position"
+					.reason = "Expected valid resource of class Position",
+					.level = ExitReason::Level::Error
 				};
 
 				worldCommands.addResource(exitReason);
 			}
 			else
 			{
-				worldCommands.addResource(ExitReason{});
+				ExitReason exitReason{ "", ExitReason::Info };
+				worldCommands.addResource(exitReason);
 			}
 		}
 	};
