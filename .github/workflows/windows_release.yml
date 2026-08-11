@@ -1,4 +1,4 @@
-name: Windows Debug
+name: Windows Release
  
 on: [push, pull_request]
  
@@ -19,10 +19,10 @@ jobs:
           echo "Conan home directory: ${{ steps.conan.outputs.conan-home }}"
  
       - name: Setup
-        run: ./setup_debug.bat
+        run: ./setup_release.bat
       
       - name: Build project
-        run: cmake --build build --config Debug --parallel
+        run: cmake --build build --config Release --parallel
       
       - name: Run tests
-        run: ./build/runtime/Debug/P2LibTests.exe
+        run: ./build/runtime/Release/P2LibTests.exe
