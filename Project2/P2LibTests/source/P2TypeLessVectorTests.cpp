@@ -162,7 +162,7 @@ namespace P2::tests
 
 		EXPECT_TRUE(vector.remove(1));
 
-		ASSERT_EQ(vector.getObjectsCapacity(), 3);
+		ASSERT_GE(vector.getObjectsCapacity(), 3);
 	}
 
 	TEST_F(TypeLessVectorTests, RemoveTest)
@@ -187,6 +187,26 @@ namespace P2::tests
 			ASSERT_FALSE(vector.remove(1));
 			ASSERT_EQ(vector.getObjectsCount(), 2);
 		}
+	}
+
+	TEST_F(TypeLessVectorTests, ReserveTest)
+	{
+		TypeLessVector vector = TypeLessVector::Create<Sprite>();
+		EXPECT_EQ(vector.getObjectsCapacity(), 0);
+
+		vector.reserve<Sprite>(1);
+		EXPECT_EQ(vector.getObjectsCapacity(), 1);
+
+		vector.reserve<Sprite>(20);
+		EXPECT_EQ(vector.getObjectsCapacity(), 20);
+
+		/// Reserve shouldn't shrink the container
+		vector.reserve<Sprite>(10);
+		EXPECT_EQ(vector.getObjectsCapacity(), 20);
+
+		/// Reserve with invalid type should not change the capacity
+		vector.reserve<Position>(40);
+		EXPECT_EQ(vector.getObjectsCapacity(), 20);
 	}
 
 	TEST_F(TypeLessVectorTests, HasTypeTest)

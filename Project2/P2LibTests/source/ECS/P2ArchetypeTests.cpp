@@ -61,6 +61,15 @@ namespace P2::ecs::tests
 		ASSERT_EQ(index, InvalidIndex);
 	}
 
+	TEST_F(ECSArchetypeTests, ReserveTest)
+	{
+		Archetype archetype = Archetype::Create<Position>();
+
+		archetype.reserve<Position>(10);
+		archetype.reserve<Position>(20);
+		archetype.reserve<Position>(2);
+	}
+
 	TEST_F(ECSArchetypeTests, RemoveComponentsTest)
 	{
 		Archetype archetype = Archetype::Create<Position, Sprite>();

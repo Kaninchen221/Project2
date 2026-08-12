@@ -12,7 +12,11 @@ namespace P2::ecs
 {
 	class P2_API Archetype
 	{
+		inline static auto Logger = ConsoleLogger::CreateOrGet("P2::ecs::Archetype");
+
 	public:
+
+		using Entities = std::vector<Entity>;
 
 		Archetype(Archetype&& other) noexcept = default;
 		Archetype& operator = (Archetype&& other) noexcept = default;
@@ -24,6 +28,12 @@ namespace P2::ecs
 
 		template<class... Components>
 		size_t add(const Entity& entity, Components&&... components);
+
+		template<class... Components>
+		void addBatch(ID firstEntityID, size_t count, Components&&... components);
+
+		template<class T>
+		void reserve(size_t componentsCount);
 
 		bool remove(const Entity& entity);
 
@@ -58,7 +68,7 @@ namespace P2::ecs
 
 		std::vector<ID> types;
 
-		std::vector<Entity> entities;
+		Entities entities;
 
 		template<class Component>
 		size_t addSingleComponent(Component&& component)
@@ -74,7 +84,7 @@ namespace P2::ecs
 		Archetype archetype;
 		(archetype.componentsPack.push_back(TypeLessVector::Create<Components>()), ...);
 
-		(archetype.types.push_back(GetTypeID<Components>()), ...);
+		(archetype.types.push_back(ResolvePossibleComponentBatcher<Components>()), ...);
 
 		return archetype;
 	}
@@ -92,6 +102,75 @@ namespace P2::ecs
 			entities.emplace_back(entity.getID(), index);
 
 		return index;
+	}
+
+	template<class... Components>
+	void Archetype::addBatch([[maybe_unused]] ID firstEntityID, size_t count, Components&&... components)
+	{
+		auto reserveComponents = [&Logger = Logger, &self = *this, &count = count]<class ComponentT>(ComponentT&&)
+		{
+			auto* vector = self.getComponentsOfType<ComponentT>();
+			if (!vector)
+			{
+				Logger->critical("Couldn't find a vector with components with ComponentT ID: {}", ResolvePossibleComponentBatcher<ComponentT>());
+				return;
+			}
+
+			/// There is no much sense to check it every time but let's stay with it
+			const auto freeCapacity = vector->getObjectsCapacity() - vector->getObjectsCount();
+			if (freeCapacity < count)
+			{
+				vector->reserve<CollapsePossibleBatcher<ComponentT>>(count + vector->getObjectsCount());
+			}
+		};
+
+		(reserveComponents(components), ...);
+
+		auto addComponents = 
+			[&Logger = Logger, &self = *this, &firstEntityID = firstEntityID, count = count]
+			<class ComponentT>(ComponentT&& component)
+			{
+				Entities newEntities;
+				newEntities.reserve(count);
+
+				auto* vector = self.getComponentsOfType<ComponentT>();
+				if (!vector)
+				{
+					Logger->critical("Couldn't find a vector with components with ComponentT ID: {}", ResolvePossibleComponentBatcher<ComponentT>());
+					return Entities{};
+				}
+
+				for (size_t i = 0; i < count; ++i)
+				{
+					if constexpr (IsBatcher<ComponentT>())
+					{
+						const auto componentIndex = vector->add(std::invoke(component, i));
+						newEntities.emplace_back(Entity{ firstEntityID + i, componentIndex });
+					}
+					else
+					{
+						const auto componentIndex = vector->add(std::forward<ComponentT>(component));
+						newEntities.emplace_back(Entity{ firstEntityID + i, componentIndex });
+					}
+				}
+
+				return newEntities;
+			};
+
+		/// TODO (very low): Most probably we are making here multiple assignments to the same variable
+		/// But I'm not sure at 100% about this, but most probably yes
+		Entities addedEntities;
+		((addedEntities = addComponents(components)), ...);
+		entities.append_range(addedEntities);
+	}
+
+	template<class T>
+	void Archetype::reserve(size_t componentsCount)
+	{
+		for (auto& components : componentsPack)
+		{
+			components.reserve<T>(componentsCount);
+		}
 	}
 
 	template<class Component>
@@ -128,7 +207,7 @@ namespace P2::ecs
 	{
 		const std::vector<ID> wantedTypes
 		{
-			GetTypeID<Components>()...
+			ResolvePossibleComponentBatcher<Components>()...
 		};
 
 		for (auto wantedType : wantedTypes)
@@ -145,7 +224,7 @@ namespace P2::ecs
 	{
 		std::vector<ID> wantedTypes
 		{
-			GetTypeID<Components>()...
+			ResolvePossibleComponentBatcher<Components>()...
 		};
 
 		for (const auto& type : types)

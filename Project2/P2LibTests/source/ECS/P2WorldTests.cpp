@@ -16,6 +16,8 @@ namespace P2::ecs::tests
 	{
 	protected:
 
+		inline static auto Logger = ConsoleLogger::CreateOrGet("P2::ecs::tests::ECSWorldTests");
+
 		World world;
 	};
 
@@ -112,6 +114,73 @@ namespace P2::ecs::tests
 		ASSERT_TRUE(world.getComponent<Position>(entitySprite));
 		ASSERT_TRUE(world.getComponent<Sprite>(entitySprite));
 		ASSERT_TRUE(world.getComponent<Velocity>(entitySprite));
+	}
+
+	TEST_F(ECSWorldTests, SpawnBatchEntitiesOptimizedTest)
+	{
+		const int64_t bigCount = 1'000'000;
+
+		Clock clock;
+		clock.start();
+
+		{ /// Spawn entities using spawn
+			for (int64_t i = 0; i < bigCount; ++i)
+			{
+				world.spawn(Position{ float(i), float(i) }, Sprite{});
+			}
+
+			auto elapsedTime = clock.getElapsedTime();
+			Logger->info("Spawned non-optimized 1'000'000 entities in {} ms", elapsedTime.getAsMilliseconds().count());
+		}
+
+		{ /// Spawn entities using spawnBatch
+			clock.start();
+			world.spawnBatch(bigCount, Position{}, Sprite{}); /// First easier version
+
+			auto elapsedTime = clock.getElapsedTime();
+			Logger->info("Spawned optimized 1'000'000 entities in {} ms", elapsedTime.getAsMilliseconds().count());
+		}
+
+		{ /// Spawn entities using spawnBatch with lambda to init components
+			size_t invokeCounter = 0;
+			auto positionCreator = [&invokeCounter = invokeCounter](int64_t i) -> Position
+				{
+					++invokeCounter;
+					return Position{ static_cast<float>(i), static_cast<float>(i) };
+				};
+			world.spawnBatch(bigCount, positionCreator, Sprite{});
+			EXPECT_EQ(invokeCounter, bigCount);
+
+			auto elapsedTime = clock.getElapsedTime();
+			Logger->info("Spawned optimized 1'000'000 entities in {} ms, batch with lambda", elapsedTime.getAsMilliseconds().count());
+		}
+
+		const auto totalEntities = world.getEntitiesCount();
+		EXPECT_EQ(totalEntities, bigCount * 3 /* It's the number of 'massive' spawns*/);
+
+		/// There should be only one archetype
+		/// Because lambdas should be resolved to it's return type
+		const auto totalArchetypes = world.getArchetypesCount();
+		EXPECT_EQ(totalArchetypes, 1);
+	}
+
+	TEST_F(ECSWorldTests, SpawnBatchWithOverloadedOperatorTest)
+	{
+		const size_t entitiesPerBatch = 5;
+
+		/// OverloadedOperator::operator() must return int64_t when invoked with int64_t param
+		static_assert(std::is_same_v<decltype(OverloadedOperator{}(int64_t{})), int64_t>);
+
+		/// The OverloadedOperator object should be collapsed to its return type when passed to spawnBatch
+		world.spawnBatch(entitiesPerBatch, OverloadedOperator{});
+		world.spawnBatch(entitiesPerBatch, int64_t{});
+		world.spawnBatch(entitiesPerBatch, OverloadedOperator{});
+
+		const auto totalEntities = world.getEntitiesCount();
+		EXPECT_EQ(totalEntities, entitiesPerBatch * 3 /* We invoked spawnBatch three times*/);
+
+		const auto totalArchetypes = world.getArchetypesCount();
+		EXPECT_EQ(totalArchetypes, 1);
 	}
 
 	TEST_F(ECSWorldTests, HasEntityTest)

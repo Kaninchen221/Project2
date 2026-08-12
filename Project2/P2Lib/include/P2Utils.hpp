@@ -1,6 +1,7 @@
 #pragma once
 
 #include "P2LibConfig.hpp"
+#include "P2FunctionTraits.hpp"
 
 #include <algorithm>
 #include <iterator>
@@ -38,9 +39,47 @@ namespace P2
 	{
 		// As for now typeid is good enough
 		// For MSVC the hashes will be different because we are using namespaces
-		auto& type = typeid(std::decay_t<T>);
+		auto& type = typeid(std::remove_cvref_t<T>);
 		return type.hash_code();
 	}
+
+	/// Batcher is a callable that takes int64_t which is index and return some component
+	template<class T>
+	using IsBatcher = std::is_invocable<T, int64_t>;
+
+	template<class T>
+	constexpr bool IsBatcherV = IsBatcher<T>::value;
+
+	template <typename T>
+	constexpr auto ResolveBatcherType() 
+	{
+		if constexpr (IsBatcherV<T>) 
+		{
+			return std::invoke_result_t<T, int64_t>();
+		}
+		else 
+		{
+			return std::remove_cvref_t<T>();
+		}
+	}
+
+	/// Get the type of the result of the batcher or just return the type
+	template<class Type>
+	struct CollapsePossibleBatcher
+	{
+		using T = decltype(ResolveBatcherType<Type>());
+	};
+
+	/// See CollapsePossibleBatcher
+	template<class T>
+	using CollapsePossibleBatcherT = CollapsePossibleBatcher<T>::T;
+
+	/// Get type id of returned type of invocable or return type id
+	template<class T>
+	inline size_t ResolvePossibleComponentBatcher()
+	{
+		return GetTypeID<CollapsePossibleBatcherT<T>>();
+	};
 
 	inline bool IsDebuggerAttached()
 	{

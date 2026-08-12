@@ -31,15 +31,17 @@ namespace P2::ecs
 		World& operator = (const World& other) noexcept = default;
 		World& operator = (World&& other) noexcept = default;
 
-		// TODO (high): Write optimized methods that will allow to spawn enormous amount of entities at once
-		// It's high, because it's impacting highly performace
-
 		// TODO (low): Add check that will block adding more than one component of the same type in one entity OR
 		// Handle this situation but this is not easy and easier way is just making an another struct that will pack doubled components
 		// into one structure
 		/// Entities & Components
 		template<class... Components>
 		Entity spawn(Components&&... components);
+
+		/// Component can be a component or an invocable that must have the int64_t param and must return a component
+		/// If you pass an invocable with other params list then it will be treated as a component
+		template<class... Components>
+		void spawnBatch(int64_t count, Components&&... components);
 
 		bool hasEntity(const Entity& entity) noexcept;
 
@@ -130,6 +132,22 @@ namespace P2::ecs
 		return entity;
 	}
 #pragma warning(pop)
+
+	template<class... Components>
+	void World::spawnBatch(int64_t count, Components&&... components)
+	{
+		const ID firstID = lastID + 1;
+		lastID += count;
+		 
+		for (auto& archetype : archetypes)
+		{
+			if (archetype.typesEqual<Components...>())
+				return archetype.addBatch(firstID, count, std::forward<Components>(components)...);
+		}
+		
+		auto& archetype = archetypes.emplace_back(Archetype::Create<Components...>());
+		return archetype.addBatch(firstID, count, std::forward<Components>(components)...);
+	}
 
 	template<class Component>
 	Component* World::getComponent(const Entity& entity)

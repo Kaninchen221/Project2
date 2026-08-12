@@ -3,6 +3,7 @@
 #include "P2LibConfig.hpp"
 #include "P2Debug.hpp"
 #include "P2Function.hpp"
+#include "P2Utils.hpp"
 
 #include "ecs/P2Entity.hpp"
 
@@ -94,6 +95,9 @@ namespace P2
 
 		bool remove(size_t index);
 
+		template<class T>
+		void reserve(size_t count);
+
 		template<class T, class F = void(*)(T&)>
 		bool apply(this auto& self, F f);
 
@@ -112,7 +116,7 @@ namespace P2
 		size_t getLastIndex() const noexcept { return objectsCount + removedObjects.size() - 1; }
 
 		template<class T>
-		bool hasType() const noexcept { return GetTypeID<T>() == typeID; }
+		bool hasType() const noexcept;
 
 		size_t getObjectsCount() const noexcept { return objectsCount; }
 
@@ -142,7 +146,7 @@ namespace P2
 		}
 
 		template<class T>
-		void reallocateElements();
+		void reallocateElements(size_t desiredObjectsCapacity);
 
 		Buffer buffer;
 
@@ -195,7 +199,7 @@ namespace P2
 	template<class T>
 	TypeLessVector TypeLessVector::Create()
 	{
-		using ObjectT = std::decay_t<T>;
+		using ObjectT = CollapsePossibleBatcherT<T>;
 
 		// Lambda that invokes destructor
 		auto destructor = [](void* objectVoidPtr) 
@@ -206,7 +210,7 @@ namespace P2
 
 		return TypeLessVector
 		(
-			GetTypeID<ObjectT>(), destructor, sizeof(ObjectT), std::is_trivially_constructible_v<ObjectT>
+			ResolvePossibleComponentBatcher<T>(), destructor, sizeof(ObjectT), std::is_trivially_constructible_v<ObjectT>
 		);
 	}
 
@@ -220,7 +224,7 @@ namespace P2
 
 		static_assert(IsCopyConstructible || IsMoveConstructible, "TypeLessVector::add: Object must be copy or move constructible.");
 
-		if (typeID != GetTypeID<Object>())
+		if (typeID != ResolvePossibleComponentBatcher<Object>())
 		{
 			Logger->error("TypeLessVector::add: Type mismatch. Expected typeID: {}, but got typeID: {}", typeID, GetTypeID<Object>());
 			Ensure(false);
@@ -230,22 +234,25 @@ namespace P2
 		size_t byteIndex = InvalidIndex;
 		size_t objectIndex = InvalidIndex;
 
-		// Index for a new component at a released index
+		/// Index for a new component at a released index
 		if (!removedObjects.empty())
 		{
 			objectIndex = removedObjects.back();
 			removedObjects.pop_back();
 			byteIndex = objectIndex * typeSize;
 		}
-		else // Index for a new component at the end
+		else /// Index for a new component at the end
 		{
-			reallocateElements<Object>();
+			/// Call reallocation only when we really need it
+			if (objectsCount + 1 > objectsCapacity)
+			{
+				reallocateElements<Object>((objectsCount + 1) * 2 /* growth factor */);
+			}
 
 			byteIndex = typeSize * objectsCount;
 			objectIndex = byteIndex / typeSize;
 		}
 
-		objectsCapacity = buffer.size() / typeSize;
 		++objectsCount;
 
 		Object* location = reinterpret_cast<Object*>(&buffer[byteIndex]);
@@ -260,6 +267,12 @@ namespace P2
 		}
 
 		return objectIndex;
+	}
+
+	template<class T>
+	void TypeLessVector::reserve(size_t desiredObjectsCapacity)
+	{
+		reallocateElements<T>(desiredObjectsCapacity);
 	}
 
 	template<class T, class F>
@@ -309,7 +322,7 @@ namespace P2
 		if (index >= objectsCount + removedObjects.size())
 			return static_cast<ReturnT>(nullptr);
 
-		if (GetTypeID<Object>() != typeID)
+		if (ResolvePossibleComponentBatcher<Object>() != typeID)
 			return static_cast<ReturnT>(nullptr);
 
 		if (std::ranges::contains(removedObjects, index))
@@ -328,23 +341,32 @@ namespace P2
 
 		return reinterpret_cast<ReturnT>(buffer.data() + offset);
 	}
+	
+	template<class T>
+	inline bool TypeLessVector::hasType() const noexcept
+	{
+		return ResolvePossibleComponentBatcher<T>() == typeID;
+	}
 
 	template<class T>
-	void TypeLessVector::reallocateElements()
+	void TypeLessVector::reallocateElements(size_t desiredObjectsCapacity)
 	{
 		using Object = std::decay_t<T>;
 
-		const size_t desiredSize = (objectsCount * typeSize) + typeSize;
+		if (sizeof(Object) != typeSize)
+			return;
+
+		const size_t desiredSize = desiredObjectsCapacity * typeSize;
 
 		if (desiredSize > buffer.capacity())
 		{
-			const auto newSize = static_cast<size_t>(desiredSize * 1.5);
+			const auto newSize = static_cast<size_t>(desiredSize);
 			Buffer newBuffer{ newSize, std::byte{} };
 
 			// Destroy old objects and move the newBuffer to the buffer
 			for (size_t objectIndex = 0; objectIndex < objectsCount + removedObjects.size(); ++objectIndex)
 			{
-				auto* element = get<T>(objectIndex);
+				auto* element = get<Object>(objectIndex);
 				// Element index can point at removed element
 				if (!element)
 					continue;
@@ -361,6 +383,7 @@ namespace P2
 
 			// Move the new vector to the old vector
 			buffer = std::move(newBuffer);
+			objectsCapacity = desiredObjectsCapacity;
 		}
 	}
 }

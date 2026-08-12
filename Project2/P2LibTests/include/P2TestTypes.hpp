@@ -263,6 +263,11 @@ namespace P2::tests
 		}
 	};
 
+	struct OverloadedOperator
+	{
+		int64_t operator () (int64_t) { return {}; }
+	};
+
 	class NonMovableClass
 	{
 	public:
