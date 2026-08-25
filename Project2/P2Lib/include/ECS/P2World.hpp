@@ -74,6 +74,12 @@ namespace P2::ecs
 
 		bool hasResource(TypeID) const;
 
+		template<class ResourceT>
+		bool hasResource() const
+		{
+			return hasResource(GetTypeID<ResourceT>());
+		}
+
 		/// Commands
 		// TODO (low) Would be nice to completly omit mutexes
 		void addCommands(Commands&& newCommands) 

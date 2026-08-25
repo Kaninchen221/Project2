@@ -292,6 +292,14 @@ namespace P2::ecs::tests
 		ASSERT_TRUE(world.hasResource(typeID));
 	}
 
+	TEST_F(ECSWorldTests, HasResourceTemplatedTest)
+	{
+		ASSERT_FALSE(world.hasResource<Position>());
+
+		world.addResource(Position{});
+		ASSERT_TRUE(world.hasResource<Position>());
+	}
+
 	TEST_F(ECSWorldTests, GetArchetypesWithTest)
 	{
 		world.spawn(Sprite{});
