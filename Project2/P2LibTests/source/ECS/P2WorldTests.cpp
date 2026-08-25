@@ -267,6 +267,14 @@ namespace P2::ecs::tests
 		ASSERT_FALSE(added);
 	}
 
+	TEST_F(ECSWorldTests, AddOrGetResourceTest)
+	{
+		ASSERT_FALSE(world.hasResource<ResourceTime>());
+
+		auto resource = world.addOrGetResource<ResourceTime>();
+		ASSERT_TRUE(resource);
+	}
+
 	TEST_F(ECSWorldTests, GetResourceTest)
 	{
 		auto resource = world.getResource<ResourceTime>();

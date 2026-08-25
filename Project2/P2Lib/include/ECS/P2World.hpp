@@ -70,6 +70,9 @@ namespace P2::ecs
 		auto* addResource(ResourceT&& newResource);
 
 		template<class ResourceT>
+		auto* addOrGetResource();
+
+		template<class ResourceT>
 		auto* getResource(this auto& self);
 
 		bool hasResource(TypeID) const;
@@ -200,8 +203,6 @@ namespace P2::ecs
 		return archetype.add(entity, std::forward<Components>(components)...);
 	}
 
-	// TODO (low): Create addOrGetResource
-
 	template<class ResourceT>
 	auto* World::addResource(ResourceT&& newResource)
 	{
@@ -217,6 +218,23 @@ namespace P2::ecs
 
 		auto& typeLessVector = resources.emplace_back(TypeLessVector::Create<Resource>());
 		typeLessVector.add(std::forward<ResourceT>(newResource));
+
+		return typeLessVector.get<Resource>(0);
+	}
+
+	template<class ResourceT>
+	inline auto* World::addOrGetResource()
+	{
+		using Resource = std::remove_cvref_t<ResourceT>;
+
+		for (auto& resource : resources)
+		{
+			if (resource.hasType<Resource>())
+				return resource.get<Resource>(0);
+		}
+
+		auto& typeLessVector = resources.emplace_back(TypeLessVector::Create<Resource>());
+		typeLessVector.add(ResourceT{});
 
 		return typeLessVector.get<Resource>(0);
 	}
