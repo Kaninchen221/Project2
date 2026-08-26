@@ -16,6 +16,9 @@ namespace P2
 		void SetUp() override
 		{
 			game.initialize();
+
+			auto& world = game.getWorld();
+			ASSERT_TRUE(world.getResource<sf::RenderWindow>());
 		}
 
 		void TearDown() override

@@ -2,9 +2,57 @@
 
 namespace P2
 {
+	void WindowSystems::PollEventsLabel::PollEvents(ecs::Resource<sf::RenderWindow> renderWindowResource)
+	{
+		auto& window = *renderWindowResource;
+
+		if (!window.isOpen())
+			return;
+
+		if (!window.setActive(true))
+		{
+			Logger->error("Couldn't active window");
+			return;
+		}
+
+		while (const auto event = window.pollEvent())
+		{
+			if (event->is<sf::Event::Closed>())
+			{
+				window.close();
+			}
+		}
+	}
+
+	void WindowSystems::RenderLabel::Render(ecs::Resource<sf::RenderWindow> renderWindowResource)
+	{
+		auto& window = *renderWindowResource;
+
+		if (!window.isOpen())
+			return;
+
+		if (!window.setActive(true))
+		{
+			Logger->error("Couldn't active window");
+			return;
+		}
+
+		window.clear();
+
+		
+
+		window.display();
+	}
+
 	bool Game::initialize()
 	{
 		createWindow();
+
+		schedule.addSystem(WindowSystems::PollEventsLabel{}, WindowSystems::PollEventsLabel::PollEvents, ecs::MainThread{}, ecs::Before(WindowSystems::RenderLabel{}));
+		schedule.addSystem(WindowSystems::RenderLabel{}, WindowSystems::RenderLabel::Render, ecs::MainThread{});
+
+		schedule.buildGraph();
+		schedule.resolveGraph();
 
 		return true;
 	}
@@ -16,6 +64,9 @@ namespace P2
 
 	bool Game::loop()
 	{
+		auto windowResource = world.getResource<sf::RenderWindow>();
+		auto& window = *windowResource;
+
 		gameClock.start();
 		while (window.isOpen())
 		{
@@ -33,19 +84,7 @@ namespace P2
 
 	void Game::loopStep(const Time&)
 	{
-		while (const auto event = window.pollEvent())
-		{
-			if (event->is<sf::Event::Closed>())
-			{
-				window.close();
-			}
-		}
-
-		window.clear();
-
-		/// Inform objects. systems etc. about DeltaTime
-
-		window.display();
+		schedule.runOnce(world);
 	}
 
 	void Game::requestClose()
@@ -55,8 +94,9 @@ namespace P2
 
 	void Game::createWindow()
 	{
-		const auto videoMode = sf::VideoMode::getDesktopMode();
+		auto window = world.addOrGetResource<sf::RenderWindow>();
 
-		window.create(videoMode, "Project2", sf::State::Fullscreen);
+		const auto videoMode = sf::VideoMode::getDesktopMode();
+		window->create(videoMode, "Project2", sf::State::Fullscreen);
 	}
 }

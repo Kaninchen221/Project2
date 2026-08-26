@@ -4,10 +4,31 @@
 #include "P2Clock.hpp"
 #include "P2Logger.hpp"
 
+#include "ECS\P2World.hpp"
+#include "ECS\P2Schedule.hpp"
+#include "ECS\P2Resource.hpp"
+
 #include <SFML/Graphics/RenderWindow.hpp>
 
 namespace P2
 {
+	struct WindowSystems
+	{
+		struct PollEventsLabel 
+		{
+			inline static auto Logger = ConsoleLogger::CreateOrGet("PollEvents");
+
+			static void PollEvents(ecs::Resource<sf::RenderWindow> renderWindowResource);
+		};
+
+		struct RenderLabel
+		{
+			inline static auto Logger = ConsoleLogger::CreateOrGet("Render");
+
+			static void Render(ecs::Resource<sf::RenderWindow> renderWindowResource);
+		};
+	};
+
 	/// Always call one time initialize before calling any loop method
 	/// For looping there are two methods: loop (call and forget about it) or loopStep (mainly for tests)
 	/// Always after looping call deinitialize
@@ -25,6 +46,8 @@ namespace P2
 
 		void requestClose();
 
+		auto& getWorld(this auto& self) { return self.world; }
+
 	private:
 
 		Clock gameClock;
@@ -33,7 +56,8 @@ namespace P2
 
 		bool requestedClose = false;
 
-		sf::RenderWindow window;
+		ecs::World world;
+		ecs::Schedule schedule;
 
 	};
 }
