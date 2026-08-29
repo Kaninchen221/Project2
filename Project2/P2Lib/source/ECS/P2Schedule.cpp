@@ -241,6 +241,7 @@ namespace P2::ecs
 		for (auto& layer : layers)
 		{
 			{ // Join threads before executing commands on world
+				// TODO (Very High): Reuse nodes
 				std::vector<std::jthread> threads;
 				for (auto& node : layer.nodes)
 				{
