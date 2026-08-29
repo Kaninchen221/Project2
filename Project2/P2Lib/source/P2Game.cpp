@@ -29,12 +29,6 @@ namespace P2
 		ecs::Resource<RenderData> renderDataRes
 	)
 	{
-		if (!renderDataRes)
-		{
-			Logger->error("renderDataRes is nullptr");
-			return;
-		}
-
 		auto& renderData = *renderDataRes;
 		if (!renderData.isDirty)
 		{
@@ -90,13 +84,7 @@ namespace P2
 		ecs::Resource<RenderData> renderDataRes
 	)
 	{
-		if (!renderWindowResource)
-		{
-			Logger->error("renderWindowResource is nullptr");
-			return;
-		}
 		auto& window = *renderWindowResource;
-
 		if (!window.isOpen())
 		{
 			return;
@@ -138,7 +126,7 @@ namespace P2
 		world.addResource(RenderData{});
 
 		/// Create world
-		const int64_t entitiesCount = 1'000'000;
+		const int64_t entitiesCount = 10'000;
 		const int64_t width = 100;
 		auto positionBatcher =
 			[width = width](int64_t index) -> Position
