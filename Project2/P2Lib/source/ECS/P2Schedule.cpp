@@ -3,6 +3,7 @@
 #include "P2Clock.hpp"
 
 #include <ranges>
+#include <future>
 
 namespace P2::ecs
 {
@@ -240,9 +241,9 @@ namespace P2::ecs
 		auto& layers = graph.layers;
 		for (auto& layer : layers)
 		{
-			{ // Join threads before executing commands on world
-				// TODO (Very High): Reuse nodes
-				std::vector<std::jthread> threads;
+			// TODO (very high): Use some lib for parallel tasks like task flow lib
+			{ 
+				std::vector<std::future<void>> tasks;
 				for (auto& node : layer.nodes)
 				{
 					if (shouldSkipNode(node, world))
@@ -253,21 +254,22 @@ namespace P2::ecs
 
 					if (!node.mainThread)
 					{
-						threads.push_back(
-						std::jthread([&node = node, &world = world]()
-						{
-#						if P2_TIME_TRACE
-							Clock clock;
-#						endif
+						tasks.push_back(
+						std::async(std::launch::async,
+							[&node = node, &world = world]()
+							{
+#							if P2_TIME_TRACE
+								Clock clock;
+#							endif
 
-							auto& systemAdapter = node.systemAdapter;
-							if (systemAdapter)
-								systemAdapter(world);
+								auto& systemAdapter = node.systemAdapter;
+								if (systemAdapter)
+									systemAdapter(world);
 
-#						if P2_TIME_TRACE
-							node.executeTime = clock.getElapsedTime();
-#						endif
-						})
+#							if P2_TIME_TRACE
+								node.executeTime = clock.getElapsedTime();
+#							endif
+							})
 						);
 					}
 					else
@@ -284,6 +286,13 @@ namespace P2::ecs
 						node.executeTime = clock.getElapsedTime();
 #					endif
 					}
+				}
+
+				/// Manually call wait for every task to be sure that they are finished
+				/// In theory they should call wait in their destructor, but I don't trust them
+				for (auto& task : tasks)
+				{
+					task.wait();
 				}
 			}
 
