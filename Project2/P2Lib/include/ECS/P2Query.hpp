@@ -168,6 +168,20 @@ namespace P2::ecs
 		QueryIteratorImpl<IsConstT, Components...> end() noexcept { return endImpl(); }
 		QueryIteratorImpl<IsConstT, Components...> end() const noexcept { return endImpl(); }
 
+		// TODO (high): test and optimize
+		QueryIteratorImpl<IsConstT, Components...> operator [](size_t index) const 
+		{
+			size_t currentIndex = 0;
+			auto it = begin();
+			while (it != end() && currentIndex != index)
+			{
+				++it;
+				++currentIndex;
+			}
+
+			return it;
+		}
+
 	private:
 
 		auto beginImpl() const noexcept { return archetypes.empty() ? end() : QueryIteratorImpl<IsConstT, Components...>{ archetypes, 0, 0 }; }

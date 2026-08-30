@@ -8,7 +8,7 @@
 
 namespace P2
 {	
-	inline static float ElementSize = 10;
+	inline static float ElementSize = 16;
 
 	struct Position
 	{
@@ -24,5 +24,10 @@ namespace P2
 	{
 		bool isDirty = true;
 		sf::VertexBuffer vertexBuffer;
+		bool isVertexBufferCreated = false;
+
+		/// Single chunk has a shape related to how the entities are located
+		const uint32_t chunkSize = 64;
+		uint32_t chunkToUpdate = 0;
 	};
 }

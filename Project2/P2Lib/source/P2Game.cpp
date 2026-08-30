@@ -1,5 +1,7 @@
 #include "P2Game.hpp"
 
+#include <algorithm>
+
 namespace P2
 {
 	void WindowSystems::PollEventsLabel::PollEvents(ecs::Resource<sf::RenderWindow> renderWindowResource)
@@ -38,46 +40,82 @@ namespace P2
 			return;
 		}
 
-		constexpr int32_t verticesPerObject = 4;
-		sf::VertexBuffer vertexBuffer;
-		const auto vertexCount = drawableQuery.getComponentCount() / drawableQuery.getTypeCount() * verticesPerObject;
-		if (!vertexBuffer.create(vertexCount))
-		{
-			Logger->error("Couldn't create vertex buffer, vertex count: {}", vertexCount);
-			return;
-		}
-		vertexBuffer.setPrimitiveType(sf::PrimitiveType::TriangleStrip);
-		vertexBuffer.setUsage(sf::VertexBuffer::Usage::Static);
+		constexpr int32_t verticesPerObject = 6;
+		auto& vertexBuffer = renderData.vertexBuffer;
 
-		uint32_t offset = 0;
-		uint32_t index = 0;
-		for (auto [positionPtr, colorPtr] : drawableQuery)
+		/// Create Vertex Buffer if it's not created
+		// TODO (mid): Refactor it
+		const auto componentPerTypeCount = static_cast<uint32_t>(drawableQuery.getComponentCount() / drawableQuery.getTypeCount());
+		if (!renderData.isVertexBufferCreated)
 		{
+			const auto vertexCount = componentPerTypeCount * verticesPerObject;
+			if (!vertexBuffer.create(vertexCount))
+			{
+				Logger->error("Couldn't create vertex buffer, vertex count: {}", vertexCount);
+				return;
+			}
+			vertexBuffer.setPrimitiveType(sf::PrimitiveType::Triangles);
+			vertexBuffer.setUsage(sf::VertexBuffer::Usage::Static);
+		}
+
+		const uint32_t firstObject = renderData.chunkToUpdate * renderData.chunkSize;
+		auto it = drawableQuery[firstObject];
+
+		const auto rectCountToUpdate =
+			[&renderData = renderData, componentPerTypeCount = componentPerTypeCount, firstObject = firstObject]() -> uint32_t
+			{ 
+				return ::std::min(renderData.chunkSize, componentPerTypeCount - firstObject);
+			}();
+
+		std::vector<sf::Vertex> vertices;
+		vertices.reserve(renderData.chunkSize * verticesPerObject);
+
+		size_t index = 0;
+		while (index != rectCountToUpdate)
+		{
+			auto [positionPtr, colorPtr] = *it;
 			const auto& position = *positionPtr;
 			const auto& color = *colorPtr;
 
-			std::array<sf::Vertex, verticesPerObject> vertices;
-			vertices[3].position = sf::Vector2f{ 0, ElementSize } + position.value;
-			vertices[2].position = sf::Vector2f{ 0, 0 } + position.value;
-			vertices[1].position = sf::Vector2f{ ElementSize, 0 } + position.value;
-			vertices[0].position = sf::Vector2f{ ElementSize, ElementSize } + position.value;
+			std::array<sf::Vertex, verticesPerObject> singleObjectVertices;
+			singleObjectVertices[0].position = sf::Vector2f{ 0, 0 } + position.value;
+			singleObjectVertices[1].position = sf::Vector2f{ ElementSize, 0 } + position.value;
+			singleObjectVertices[2].position = sf::Vector2f{ ElementSize, ElementSize } + position.value;
+			singleObjectVertices[3].position = sf::Vector2f{ ElementSize, ElementSize } + position.value;
+			singleObjectVertices[4].position = sf::Vector2f{ 0, ElementSize } + position.value;
+			singleObjectVertices[5].position = sf::Vector2f{ 0, 0 } + position.value;
 
-			vertices[0].color = color.value;
-			vertices[1].color = color.value;
-			vertices[2].color = color.value;
-			vertices[3].color = color.value;
+			singleObjectVertices[0].color = color.value;
+			singleObjectVertices[1].color = color.value;
+			singleObjectVertices[2].color = color.value;
+			singleObjectVertices[3].color = color.value;
+			singleObjectVertices[4].color = color.value;
+			singleObjectVertices[5].color = color.value;
 
-			if (!vertexBuffer.update(vertices.data(), verticesPerObject, offset))
-			{
-				Logger->error("Couldn't update vertex buffer, offset: {}, index: {}", offset, index);
-				return;
-			}
+			vertices.append_range(singleObjectVertices);
 
-			offset += verticesPerObject;
+			//Logger->info("Vertex offset: {}", vertexOffset);
+
 			++index;
+			++it;
 		}
 
-		renderData.isDirty = false;
+		const uint32_t vertexOffset = firstObject * verticesPerObject;
+		if (!vertexBuffer.update(vertices.data(), vertices.size(), vertexOffset))
+		{
+			Logger->error("Couldn't update vertex buffer, offset: {}, index: {}", vertexOffset, index);
+			return;
+		}
+
+		++renderData.chunkToUpdate;
+
+		const auto chunkCount = componentPerTypeCount / renderData.chunkSize;
+		if (renderData.chunkToUpdate == chunkCount)
+		{
+			renderData.chunkToUpdate = 0;
+		}
+
+		//renderData.isDirty = false;
 		renderData.vertexBuffer = std::move(vertexBuffer);
 	}
 
@@ -132,23 +170,42 @@ namespace P2
 		world.addResource(RenderData{});
 
 		/// Create world
-		const int64_t entitiesCount = 1'000;
-		const int64_t width = 100;
-		auto positionBatcher =
-			[width = width](int64_t index) -> Position
+		[&world = world]()
 			{
-				return Position( sf::Vector2f( float(index % width) * ElementSize, float(index / width) * ElementSize ) );
-			};
+				auto window = world.getResource<sf::RenderWindow>();
+				if (!window)
+				{
+					Logger->error("Window resource is invalid");
+					return;
+				}
 
-		auto colorBatcher =
-			[entitiesCount = entitiesCount]([[maybe_unused]] int64_t index) -> Color
-			{
-				//const uint8_t singleChannel = static_cast<uint8_t>(255 / entitiesCount * index);
-				//return Color( sf::Color( singleChannel, singleChannel, singleChannel) );
-				return Color( sf::Color::White );
-			};
+				const auto windowSize = window->getView().getSize();
 
-		world.spawnBatch(entitiesCount, positionBatcher, colorBatcher);
+				const int64_t entitiesCount = static_cast<int64_t>(windowSize.x * windowSize.y / ElementSize);
+				const auto width = static_cast<int64_t>(windowSize.x / ElementSize);
+				auto positionBatcher =
+					[width = width](int64_t index) -> Position
+					{
+						return Position(sf::Vector2f(float(index % width) * ElementSize, float(index / width) * ElementSize));
+					};
+
+				std::random_device rd;
+				std::mt19937 gen(rd());
+
+				std::uniform_int_distribution<uint32_t> dist(0, std::numeric_limits<uint32_t>::max());
+
+				auto colorBatcher =
+					[entitiesCount = entitiesCount, &gen = gen, &dist = dist]
+					([[maybe_unused]] int64_t index) -> Color
+					{
+						/// We are using the sf::Color(uint32_t) constructor to optimize it
+						return Color( 
+							sf::Color(dist(gen))
+						);
+					};
+
+				world.spawnBatch(entitiesCount, positionBatcher, colorBatcher);
+			}();
 
 		const auto elapsedTime = clock.getElapsedTime();
 		Logger->info("Game initialized: {}ms", elapsedTime.getAsMilliseconds().count());
@@ -197,7 +254,7 @@ namespace P2
 	{
 		auto window = world.addOrGetResource<sf::RenderWindow>();
 
-		const auto videoMode = sf::VideoMode::getDesktopMode();
-		window->create(videoMode, "Project2", sf::State::Fullscreen);
+		auto videoMode = sf::VideoMode::getDesktopMode();
+		window->create(videoMode, "Project2", sf::State::Windowed);
 	}
 }
