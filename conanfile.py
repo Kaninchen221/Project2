@@ -12,7 +12,8 @@ class Game2DConanFile(ConanFile):
         "gtest/1.17.0@",
         "spdlog/1.14.1@",
         "nlohmann_json/3.10.5@",
-        "sfml/3.0.2@"
+        "sfml/3.0.2@",
+        "taskflow/4.0.0@"
         ]
 
     default_options = {

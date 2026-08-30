@@ -15,6 +15,7 @@ target_link_libraries(P2Lib PUBLIC
 	gtest::gtest
 	nlohmann_json::nlohmann_json
 	sfml::sfml
+	Taskflow::Taskflow
 )
 
 set_target_properties(P2Lib PROPERTIES

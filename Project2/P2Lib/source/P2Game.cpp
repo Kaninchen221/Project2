@@ -9,11 +9,12 @@ namespace P2
 		if (!window.isOpen())
 			return;
 
-		if (!window.setActive(true))
-		{
-			Logger->error("Couldn't active window");
-			return;
-		}
+		/// We assume that we are using the window only from the main thread
+		//if (!window.setActive(true))
+		//{
+		//	Logger->error("Couldn't active window");
+		//	return;
+		//}
 
 		while (const auto event = window.pollEvent())
 		{
@@ -29,6 +30,7 @@ namespace P2
 		ecs::Resource<RenderData> renderDataRes
 	)
 	{
+		/// TODO (very high): optimize it
 		auto& renderData = *renderDataRes;
 		if (!renderData.isDirty)
 		{
@@ -90,11 +92,12 @@ namespace P2
 			return;
 		}
 
-		if (!window.setActive(true))
-		{
-			Logger->error("Couldn't active window");
-			return;
-		}
+		/// We assume that we are using the window only from the main thread
+		//if (!window.setActive(true))
+		//{
+		//	Logger->error("Couldn't active window");
+		//	return;
+		//}
 
 		window.clear();
 
@@ -113,6 +116,9 @@ namespace P2
 
 	bool Game::initialize()
 	{
+		Clock clock;
+		clock.start();
+
 		createWindow();
 
 		schedule.addSystem(WindowSystems::PollEventsLabel{}, WindowSystems::PollEventsLabel::PollEvents, ecs::MainThread{}, ecs::Before(WindowSystems::RenderLabel{}));
@@ -126,7 +132,7 @@ namespace P2
 		world.addResource(RenderData{});
 
 		/// Create world
-		const int64_t entitiesCount = 10'000;
+		const int64_t entitiesCount = 1'000;
 		const int64_t width = 100;
 		auto positionBatcher =
 			[width = width](int64_t index) -> Position
@@ -144,16 +150,21 @@ namespace P2
 
 		world.spawnBatch(entitiesCount, positionBatcher, colorBatcher);
 
+		const auto elapsedTime = clock.getElapsedTime();
+		Logger->info("Game initialized: {}ms", elapsedTime.getAsMilliseconds().count());
 		return true;
 	}
 
 	bool Game::deinitialize()
 	{
+		Logger->info("Game deinitialized");
 		return true;
 	}
 
 	bool Game::loop()
 	{
+		Logger->info("Start looping");
+
 		auto windowResource = world.getResource<sf::RenderWindow>();
 		auto& window = *windowResource;
 

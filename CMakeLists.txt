@@ -11,6 +11,7 @@ find_package(GTest CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(SFML CONFIG REQUIRED)
+find_package(taskflow CONFIG REQUIRED)
 
 # Add subdirectories
 add_subdirectory(Project2/P2Lib)

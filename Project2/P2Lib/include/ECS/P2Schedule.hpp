@@ -1,6 +1,9 @@
 #pragma once
 
 #include "P2LibConfig.hpp"
+
+#include <taskflow/taskflow.hpp>
+
 #include "P2FunctionTraits.hpp"
 #include "P2Time.hpp"
 #include "P2Logger.hpp"
@@ -85,6 +88,7 @@ namespace P2::ecs
 	struct P2_API GraphLayer
 	{
 		std::vector<GraphNode> nodes;
+		tf::Taskflow taskflow;
 	};
 
 	struct P2_API Graph
@@ -93,6 +97,8 @@ namespace P2::ecs
 		std::vector<GraphEdge> edges;
 		std::vector<GraphLayer> layers;
 	};
+
+	/// TODO (low): More integration with taskflow?
 
 	class P2_API Schedule
 	{
@@ -160,7 +166,7 @@ namespace P2::ecs
 
 	private:
 
-		bool shouldSkipNode(const GraphNode& node, const World& world) noexcept;
+		static bool ShouldSkipNode(const GraphNode& node, const World& world) noexcept;
 
 		template<class Dependency>
 		constexpr static void ResolveDeps(SystemInfo& systemInfo, const Dependency& dependency)
@@ -273,8 +279,12 @@ namespace P2::ecs
 			};
 		}
 
+		/// Helper function for tasks
+		World& getWorld() { return *worldPtr; }
+		World* worldPtr{};
+
 		Systems systems;
 		Graph graph;
-
+		tf::Executor executor;
 	};
 }

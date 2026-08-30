@@ -234,66 +234,84 @@ namespace P2::ecs
 			}
 			);
 		}
-	}
 
-	void Schedule::runOnce(World& world)
-	{
-		auto& layers = graph.layers;
+		/// Create taskflow per layer
 		for (auto& layer : layers)
 		{
-			// TODO (very high): Use some lib for parallel tasks like task flow lib
-			{ 
-				std::vector<std::future<void>> tasks;
-				for (auto& node : layer.nodes)
+			for (auto& node : layer.nodes)
+			{
+				if (node.mainThread)
 				{
-					if (shouldSkipNode(node, world))
-					{
-						Logger->warn("Skip node: {}", node.typeInfo->name());
-						continue;
-					}
+					continue;
+				}
 
-					if (!node.mainThread)
+				layer.taskflow.emplace(
+					[&node = node, getWorld = std::bind(&Schedule::getWorld, this)]()
 					{
-						tasks.push_back(
-						std::async(std::launch::async,
-							[&node = node, &world = world]()
-							{
-#							if P2_TIME_TRACE
-								Clock clock;
-#							endif
+						auto& world = std::invoke(getWorld);
 
-								auto& systemAdapter = node.systemAdapter;
-								if (systemAdapter)
-									systemAdapter(world);
+						if (ShouldSkipNode(node, world))
+						{
+							Logger->warn("Skip node: {}", node.typeInfo->name());
+							return;
+						}
 
-#							if P2_TIME_TRACE
-								node.executeTime = clock.getElapsedTime();
-#							endif
-							})
-						);
-					}
-					else
-					{
 #					if P2_TIME_TRACE
 						Clock clock;
 #					endif
 
 						auto& systemAdapter = node.systemAdapter;
 						if (systemAdapter)
-							systemAdapter(world);
+						{
+							std::invoke(systemAdapter, world);
+						}
 
 #					if P2_TIME_TRACE
 						node.executeTime = clock.getElapsedTime();
+						Logger->trace("Executing node: {} took: {}us", node.typeInfo->name(), node.executeTime.getAsMicroseconds().count());
+#					endif
+					}
+				);
+			}
+		}
+	}
+
+	void Schedule::runOnce(World& world)
+	{
+		worldPtr = &world;
+
+		auto& layers = graph.layers;
+		for (auto& layer : layers)
+		{
+			{
+				/// Run async nodes
+				auto asyncResult = executor.run(layer.taskflow);
+
+				/// Run main thread nodes
+				for (auto& node : layer.nodes)
+				{
+					if (ShouldSkipNode(node, world))
+					{
+						Logger->warn("Skip node: {}", node.typeInfo->name());
+						continue;
+					}
+
+					if (node.mainThread)
+					{
+#					if P2_TIME_TRACE
+						Clock clock;
+#					endif
+
+						std::invoke(node.systemAdapter, world);
+
+#					if P2_TIME_TRACE
+						node.executeTime = clock.getElapsedTime();
+						Logger->trace("Executing node: {} took: {}us", node.typeInfo->name(), node.executeTime.getAsMicroseconds().count());
 #					endif
 					}
 				}
 
-				/// Manually call wait for every task to be sure that they are finished
-				/// In theory they should call wait in their destructor, but I don't trust them
-				for (auto& task : tasks)
-				{
-					task.wait();
-				}
+				asyncResult.wait();
 			}
 
 			world.executeCommands();
@@ -301,7 +319,7 @@ namespace P2::ecs
 		}
 	}
 
-	bool Schedule::shouldSkipNode(const GraphNode& node, const World& world) noexcept
+	bool Schedule::ShouldSkipNode(const GraphNode& node, const World& world) noexcept
 	{
 		for (const auto& resource : node.resources)
 		{
