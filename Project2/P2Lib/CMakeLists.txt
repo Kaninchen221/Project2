@@ -16,6 +16,7 @@ target_link_libraries(P2Lib PUBLIC
 	nlohmann_json::nlohmann_json
 	sfml::sfml
 	Taskflow::Taskflow
+	stb::stb
 )
 
 set_target_properties(P2Lib PROPERTIES

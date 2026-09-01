@@ -13,7 +13,8 @@ class Game2DConanFile(ConanFile):
         "spdlog/1.14.1@",
         "nlohmann_json/3.10.5@",
         "sfml/3.0.2@",
-        "taskflow/4.0.0@"
+        "taskflow/4.0.0@",
+        "stb/cci.20240531@"
         ]
 
     default_options = {
