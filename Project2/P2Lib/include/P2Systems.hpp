@@ -13,6 +13,8 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 
+#include <imgui.h>
+
 namespace P2
 {
 	struct WindowSystems
@@ -42,6 +44,24 @@ namespace P2
 				ecs::Resource<sf::RenderWindow> renderWindowResource,
 				ecs::Resource<RenderData> renderDataRes
 			);
+		};
+	};
+
+	struct ImGuiSystems
+	{
+		inline static ImGuiID MainDockspaceID = 0;
+
+		struct ImGuiUpdateLabel
+		{
+			static void ImGuiUpdate(
+				ecs::Resource<sf::RenderWindow> renderWindowResource,
+				ecs::ConstResource<DeltaTime> deltaTimeResource
+			);
+		};
+
+		struct GameplayWindowLabel
+		{
+			static void GameplayWindow();
 		};
 	};
 }

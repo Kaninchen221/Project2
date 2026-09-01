@@ -10,6 +10,11 @@ namespace P2
 {	
 	inline static float ElementSize = 16;
 
+	struct DeltaTime
+	{
+		sf::Time value;
+	};
+
 	struct Position
 	{
 		sf::Vector2f value;

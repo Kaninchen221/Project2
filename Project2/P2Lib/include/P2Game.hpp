@@ -46,5 +46,7 @@ namespace P2
 		ecs::World world;
 		ecs::Schedule schedule;
 
+		sf::Clock deltaClock;
+
 	};
 }

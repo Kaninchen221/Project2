@@ -4,6 +4,9 @@
 
 #include "P2Systems.hpp"
 
+#include <imgui-SFML.h>
+#include <imgui.h>
+
 namespace P2
 {
 	bool Game::initialize()
@@ -16,6 +19,9 @@ namespace P2
 		schedule.addSystem(WindowSystems::PollEventsLabel{}, WindowSystems::PollEventsLabel::PollEvents, ecs::MainThread{}, ecs::Before(WindowSystems::RenderLabel{}));
 		schedule.addSystem(WindowSystems::BuildRenderDataLabel{}, WindowSystems::BuildRenderDataLabel::BuildRenderData, ecs::Before(WindowSystems::RenderLabel{}));
 		schedule.addSystem(WindowSystems::RenderLabel{}, WindowSystems::RenderLabel::Render, ecs::MainThread{});
+
+		schedule.addSystem(ImGuiSystems::ImGuiUpdateLabel{}, ImGuiSystems::ImGuiUpdateLabel::ImGuiUpdate, ecs::MainThread{}, ecs::Before(WindowSystems::RenderLabel{}));
+		schedule.addSystem(ImGuiSystems::GameplayWindowLabel{}, ImGuiSystems::GameplayWindowLabel::GameplayWindow, ecs::MainThread{}, ecs::After(ImGuiSystems::ImGuiUpdateLabel{}), ecs::Before(WindowSystems::RenderLabel{}));
 
 		schedule.buildGraph();
 		schedule.resolveGraph();
@@ -32,6 +38,8 @@ namespace P2
 
 	bool Game::deinitialize()
 	{
+		ImGui::SFML::Shutdown();
+
 		Logger->info("Game deinitialized");
 		return true;
 	}
@@ -60,6 +68,17 @@ namespace P2
 
 	void Game::loopStep(const Time&)
 	{
+		/// TODO (mid): Skip the "runOnce" if the delta time is too high
+		// Update the DeltaTime
+		auto timeResource = world.addOrGetResource<DeltaTime>();
+		if (!timeResource)
+		{
+			Logger->critical("Couldn't create or get DeltaTime resource");
+			return;
+		}
+		timeResource->value = deltaClock.restart();
+
+		// Run the schedule
 		schedule.runOnce(world);
 	}
 
@@ -71,9 +90,25 @@ namespace P2
 	void Game::createWindow()
 	{
 		auto window = world.addOrGetResource<sf::RenderWindow>();
+		if (!window)
+		{
+			Logger->critical("Couldn't create or get window resource");
+			return;
+		}
 
 		auto videoMode = sf::VideoMode::getDesktopMode();
 		window->create(videoMode, "Project2", sf::State::Windowed);
+
+		if (!ImGui::SFML::Init(*window))
+		{
+			Logger->critical("Couldn't initialize ImGui-SFML");
+			return;
+		}
+
+		ImGuiIO& io = ImGui::GetIO();
+
+		// Enable docking
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	}
 
 	void Game::createGameWorld()

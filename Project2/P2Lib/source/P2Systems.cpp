@@ -2,6 +2,10 @@
 
 #include <algorithm>
 
+#include <imgui-SFML.h>
+
+using namespace std::chrono_literals;
+
 namespace P2
 {
 	void WindowSystems::PollEventsLabel::PollEvents(ecs::Resource<sf::RenderWindow> renderWindowResource)
@@ -12,14 +16,12 @@ namespace P2
 			return;
 
 		/// We assume that we are using the window only from the main thread
-		//if (!window.setActive(true))
-		//{
-		//	Logger->error("Couldn't active window");
-		//	return;
-		//}
+		//window.setActive(true);
 
 		while (const auto event = window.pollEvent())
 		{
+			ImGui::SFML::ProcessEvent(window, *event);
+
 			if (event->is<sf::Event::Closed>())
 			{
 				window.close();
@@ -32,7 +34,6 @@ namespace P2
 		ecs::Resource<RenderData> renderDataRes
 	)
 	{
-		/// TODO (very high): optimize it
 		auto& renderData = *renderDataRes;
 		if (!renderData.isDirty)
 		{
@@ -131,24 +132,36 @@ namespace P2
 		}
 
 		/// We assume that we are using the window only from the main thread
-		//if (!window.setActive(true))
-		//{
-		//	Logger->error("Couldn't active window");
-		//	return;
-		//}
+		//window.setActive(true);
 
 		window.clear();
 
-		if (renderDataRes)
-		{
-			window.draw(renderDataRes->vertexBuffer);
-		}
-		else
-		{
-			Logger->error("renderDataRes is nullptr");
-			return;
-		}
+		window.draw(renderDataRes->vertexBuffer);
+
+		ImGui::SFML::Render(window);
 
 		window.display();
 	}
+
+	void ImGuiSystems::ImGuiUpdateLabel::ImGuiUpdate(
+		ecs::Resource<sf::RenderWindow> renderWindowResource,
+		ecs::ConstResource<DeltaTime> deltaTimeResource
+	)
+	{
+		ImGui::SFML::Update(*renderWindowResource, deltaTimeResource->value);
+		
+		ImGui::DockSpaceOverViewport(
+			MainDockspaceID,
+			ImGui::GetMainViewport(),
+			ImGuiDockNodeFlags_PassthruCentralNode // Allow the background to be visible
+		);
+	}
+
+	void ImGuiSystems::GameplayWindowLabel::GameplayWindow()
+	{
+		ImGui::Begin("Game");
+		ImGui::Button("Look at this pretty button");
+		ImGui::End();
+	}
+
 }
