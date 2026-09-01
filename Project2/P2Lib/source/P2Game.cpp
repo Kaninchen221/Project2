@@ -29,6 +29,9 @@ namespace P2
 		/// Add RenderData as a resource, it's required by the BuildRenderData system
 		world.addResource(RenderData{});
 
+		/// Add GameplayWindowData as a resource, it's required by the GameplayWindow system
+		world.addResource(GameplayWindowData{});
+
 		createGameWorld();
 
 		const auto elapsedTime = clock.getElapsedTime();
@@ -77,6 +80,7 @@ namespace P2
 			return;
 		}
 		timeResource->value = deltaClock.restart();
+		//Logger->info("Delta time: {}ms", timeResource->value.asMilliseconds());
 
 		// Run the schedule
 		schedule.runOnce(world);

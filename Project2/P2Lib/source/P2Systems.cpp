@@ -157,11 +157,59 @@ namespace P2
 		);
 	}
 
-	void ImGuiSystems::GameplayWindowLabel::GameplayWindow()
+	void ImGuiSystems::GameplayWindowLabel::GameplayWindow(
+		ecs::Resource<GameplayWindowData> gameplayWindowDataResource,
+		ecs::ConstResource<DeltaTime> deltaTimeResource
+	)
 	{
-		ImGui::Begin("Game");
-		ImGui::Button("Look at this pretty button");
+		auto& gameplayWindowData = *gameplayWindowDataResource;
+		auto& deltaTime = *deltaTimeResource;
+
+		//ImGui::ShowDemoWindow();
+		if (!gameplayWindowData.currentWindow)
+		{
+			gameplayWindowData.currentWindow = GameplayWindowLabel::ShowUpgradeWindow;
+		}
+
+		ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_MenuBar);
+
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("Game"))
+			{
+				if (ImGui::MenuItem("Upgrade")) 
+				{
+					gameplayWindowData.currentWindow = GameplayWindowLabel::ShowUpgradeWindow;
+				}
+
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Debug"))
+			{
+				if (ImGui::MenuItem("Stats")) 
+				{
+					gameplayWindowData.currentWindow = GameplayWindowLabel::ShowDebugStatsWindow;
+				}
+
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
+		}
+
+		std::invoke(gameplayWindowData.currentWindow, deltaTime);
+
 		ImGui::End();
+	}
+
+	void ImGuiSystems::GameplayWindowLabel::ShowUpgradeWindow(const DeltaTime&)
+	{
+		ImGui::Text("Upgrade window");
+	}
+
+	void ImGuiSystems::GameplayWindowLabel::ShowDebugStatsWindow(const DeltaTime& deltaTime)
+	{
+		ImGui::Text("Debug Stats window");
+		ImGui::Text("Delta time: %.3f ms", deltaTime.value.asSeconds() * 1000.f);
 	}
 
 }

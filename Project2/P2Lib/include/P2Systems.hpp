@@ -61,7 +61,18 @@ namespace P2
 
 		struct GameplayWindowLabel
 		{
-			static void GameplayWindow();
+			static void GameplayWindow(
+				ecs::Resource<GameplayWindowData> gameplayWindowDataResource,
+				ecs::ConstResource<DeltaTime> deltaTimeResource
+			);
+
+			/// Gameplay windows
+			static void ShowUpgradeWindow(const DeltaTime& deltaTime);
+
+			/// Debug windows
+			static void ShowDebugStatsWindow(const DeltaTime& deltaTime);
+
+			
 		};
 	};
 }

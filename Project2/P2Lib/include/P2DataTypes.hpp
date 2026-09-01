@@ -35,4 +35,9 @@ namespace P2
 		const uint32_t chunkSize = 64;
 		uint32_t chunkToUpdate = 0;
 	};
+
+	struct GameplayWindowData
+	{
+		std::function<void(const DeltaTime&)> currentWindow;
+	};
 }
