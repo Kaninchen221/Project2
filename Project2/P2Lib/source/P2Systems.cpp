@@ -115,9 +115,6 @@ namespace P2
 		{
 			renderData.chunkToUpdate = 0;
 		}
-
-		//renderData.isDirty = false;
-		renderData.vertexBuffer = std::move(vertexBuffer);
 	}
 
 	void WindowSystems::RenderLabel::Render(
