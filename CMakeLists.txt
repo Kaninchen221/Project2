@@ -15,6 +15,7 @@ find_package(taskflow CONFIG REQUIRED)
 find_package(stb CONFIG REQUIRED)
 
 # Add subdirectories
+add_subdirectory(Project2/ImGuiLib)
 add_subdirectory(Project2/P2Lib)
 add_subdirectory(Project2/P2LibTests)
 add_subdirectory(Project2/EntryPoint)
