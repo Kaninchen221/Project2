@@ -17,6 +17,7 @@ target_link_libraries(P2Lib PUBLIC
 	sfml::sfml
 	Taskflow::Taskflow
 	stb::stb
+	ImGuiSFML
 )
 
 set_target_properties(P2Lib PROPERTIES

@@ -5,17 +5,17 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "source/*.cpp"
 )
 
-add_library(ImGuiLib STATIC ${SOURCES})
+add_library(ImGui STATIC ${SOURCES})
 
-target_compile_features(ImGuiLib PUBLIC cxx_std_23)
-target_include_directories(ImGuiLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_features(ImGui PUBLIC cxx_std_23)
+target_include_directories(ImGui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(ImGuiLib PUBLIC
+target_link_libraries(ImGui PUBLIC
 	sfml::sfml
 	stb::stb
 )
 
-set_target_properties(ImGuiLib PROPERTIES
+set_target_properties(ImGui PROPERTIES
 	LINKER_LANGUAGE CXX
 	INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/include
 	INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/include

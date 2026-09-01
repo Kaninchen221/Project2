@@ -13,7 +13,7 @@ target_include_directories(ImGuiSFML PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(ImGuiSFML PUBLIC
 	sfml::sfml
 	stb::stb
-	ImGuiLib
+	ImGui
 )
 
 set_target_properties(ImGuiSFML PROPERTIES
