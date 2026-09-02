@@ -8,18 +8,25 @@ using namespace std::chrono_literals;
 
 namespace P2
 {
-	void WindowSystems::PollEventsLabel::PollEvents(ecs::Resource<sf::RenderWindow> renderWindowResource)
+	void WindowSystems::PollEventsLabel::PollEvents(
+		ecs::Resource<sf::RenderWindow> renderWindowResource,
+		ecs::Resource<WindowEvents> windowEventsResource
+	)
 	{
 		auto& window = *renderWindowResource;
-
 		if (!window.isOpen())
 			return;
 
 		/// We assume that we are using the window only from the main thread
 		//window.setActive(true);
 
+		auto& windowEvents = *windowEventsResource;
+		windowEvents.events.clear();
+
 		while (const auto event = window.pollEvent())
 		{
+			windowEvents.events.emplace_back(event);
+
 			ImGui::SFML::ProcessEvent(window, *event);
 
 			if (event->is<sf::Event::Closed>())
@@ -68,8 +75,9 @@ namespace P2
 				return ::std::min(renderData.chunkSize, componentPerTypeCount - firstObject);
 			}();
 
+		const auto vertexCount = renderData.chunkSize * verticesPerObject;
 		std::vector<sf::Vertex> vertices;
-		vertices.reserve(renderData.chunkSize * verticesPerObject);
+		vertices.reserve(vertexCount);
 
 		size_t index = 0;
 		while (index != rectCountToUpdate)
@@ -207,6 +215,45 @@ namespace P2
 	{
 		ImGui::Text("Debug Stats window");
 		ImGui::Text("Delta time: %.3f ms", deltaTime.value.asSeconds() * 1000.f);
+	}
+
+	void GameplaySystems::ProcessClickLabel::ProcessClick(
+		DrawableQuery drawableQuery,
+		ecs::ConstResource<WindowEvents> windowEventsResource,
+		ecs::ConstResource<WorldConfig> worldConfigResource
+	)
+	{
+		auto& windowEvents = *windowEventsResource;
+		auto& worldConfig = *worldConfigResource;
+
+		for (const auto& event : windowEvents.events)
+		{
+			if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>())
+			{
+				const auto clickedAt = 
+					sf::Vector2i(
+						mouseEvent->position.x / static_cast<int>(ElementSize), 
+						mouseEvent->position.y / static_cast<int>(ElementSize)
+					);
+
+				Logger->trace("Mouse clicked at element: {}, {}", clickedAt.x, clickedAt.y);
+
+				const auto clickedEntityIndex = clickedAt.x + (worldConfig.size.x * clickedAt.y);
+				Logger->trace("Mouse clicked at element: {}", clickedEntityIndex);
+				
+				// Check bounds
+				const auto entitiesCount = drawableQuery.getComponentCount() / drawableQuery.getTypeCount();
+				if (clickedEntityIndex < 0 || clickedEntityIndex >= entitiesCount)
+				{
+					Logger->trace("Player clicked not at any entity");
+					continue;
+				}
+
+				auto [posPtr, colorPtr] = drawableQuery.operator[](clickedEntityIndex).operator*();
+				colorPtr->value = sf::Color::Black;
+				
+			}
+		}
 	}
 
 }

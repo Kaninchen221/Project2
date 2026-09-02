@@ -17,13 +17,19 @@
 
 namespace P2
 {
+	using DrawableConstQuery = ecs::ConstQuery<Position, Color>;
+	using DrawableQuery = ecs::Query<Position, Color>;
+
 	struct WindowSystems
 	{
 		struct PollEventsLabel 
 		{
 			inline static auto Logger = ConsoleLogger::CreateOrGet("PollEvents");
 
-			static void PollEvents(ecs::Resource<sf::RenderWindow> renderWindowResource);
+			static void PollEvents(
+				ecs::Resource<sf::RenderWindow> renderWindowResource,
+				ecs::Resource<WindowEvents> windowEventsResource
+			);
 		};
 
 		struct BuildRenderDataLabel
@@ -31,7 +37,7 @@ namespace P2
 			inline static auto Logger = ConsoleLogger::CreateOrGet("BuildRenderData");
 
 			static void BuildRenderData(
-				ecs::ConstQuery<Position, Color> drawableQuery,
+				DrawableConstQuery drawableQuery,
 				ecs::Resource<RenderData> renderDataRes
 			);
 		};
@@ -73,6 +79,20 @@ namespace P2
 			static void ShowDebugStatsWindow(const DeltaTime& deltaTime);
 
 			
+		};
+	};
+
+	struct GameplaySystems
+	{
+		struct ProcessClickLabel
+		{
+			inline static auto Logger = ConsoleLogger::CreateOrGet("ProcessClick");
+
+			static void ProcessClick(
+				DrawableQuery drawableQuery,
+				ecs::ConstResource<WindowEvents> windowEventsResource,
+				ecs::ConstResource<WorldConfig> worldConfigResource
+			);
 		};
 	};
 }

@@ -23,13 +23,18 @@ namespace P2
 		schedule.addSystem(ImGuiSystems::ImGuiUpdateLabel{}, ImGuiSystems::ImGuiUpdateLabel::ImGuiUpdate, ecs::MainThread{}, ecs::Before(WindowSystems::RenderLabel{}));
 		schedule.addSystem(ImGuiSystems::GameplayWindowLabel{}, ImGuiSystems::GameplayWindowLabel::GameplayWindow, ecs::MainThread{}, ecs::After(ImGuiSystems::ImGuiUpdateLabel{}), ecs::Before(WindowSystems::RenderLabel{}));
 
+		schedule.addSystem(GameplaySystems::ProcessClickLabel{}, GameplaySystems::ProcessClickLabel::ProcessClick, ecs::After(WindowSystems::PollEventsLabel{}));
+
 		schedule.buildGraph();
 		schedule.resolveGraph();
 
-		/// Add RenderData as a resource, it's required by the BuildRenderData system
+		/// Required by the BuildRenderData system
 		world.addResource(RenderData{});
 
-		/// Add GameplayWindowData as a resource, it's required by the GameplayWindow system
+		/// Required by the PollEvents system
+		world.addResource(WindowEvents{});
+
+		/// Required by the GameplayWindow system
 		world.addResource(GameplayWindowData{});
 
 		createGameWorld();
@@ -125,9 +130,9 @@ namespace P2
 		}
 		
 		const auto windowSize = window->getView().getSize();
-		
+
 		const int64_t entitiesCount = static_cast<int64_t>(windowSize.x * windowSize.y / ElementSize);
-		const auto width = static_cast<int64_t>(windowSize.x / ElementSize);
+		const auto width = static_cast<int32_t>(windowSize.x / ElementSize);
 		auto positionBatcher =
 			[width = width](int64_t index) -> Position
 			{
@@ -145,10 +150,15 @@ namespace P2
 			{
 				/// We are using the sf::Color(uint32_t) constructor to optimize it
 				return Color( 
-					sf::Color(dist(gen))
+					//sf::Color(dist(gen))
+					sf::Color::Green
 				);
 			};
 		
 		world.spawnBatch(entitiesCount, positionBatcher, colorBatcher);
+
+		// Create the world config resource, to share the world size with systems
+		auto worldConfig = world.addOrGetResource<WorldConfig>();
+		worldConfig->size = sf::Vector2i(width, static_cast<int>(windowSize.y / ElementSize));
 	}
 }

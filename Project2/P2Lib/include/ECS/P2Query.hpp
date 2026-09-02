@@ -36,12 +36,14 @@ namespace P2::ecs
 
 		QueryIteratorImpl& operator++ () noexcept;
 
+		// TODO (high): It had a bug, when we were returning a copy and not a ref
+		// But tests where green, so be sure that there are 2 tests for it: one for const and second for non-const
 		auto operator* () const noexcept 
 		{ 
 			auto archetype = archetypes[currentArchetypeIndex];
 			auto& entities = archetype->getEntities();
 
-			auto entity = entities[currentEntityIndex];
+			auto& entity = entities[currentEntityIndex];
 
 			using ReturnT = std::conditional_t<IsConstT{}, std::tuple<const Components*...>, std::tuple<Components*... >> ;
 			return ReturnT{ archetype->getComponentOfType<Components>(entity.getComponentsIndex())... };

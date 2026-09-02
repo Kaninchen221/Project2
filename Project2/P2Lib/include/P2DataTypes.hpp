@@ -10,6 +10,11 @@ namespace P2
 {	
 	inline static float ElementSize = 16;
 
+	struct WorldConfig
+	{
+		sf::Vector2i size;
+	};
+
 	struct DeltaTime
 	{
 		sf::Time value;
@@ -32,8 +37,13 @@ namespace P2
 		bool isVertexBufferCreated = false;
 
 		/// Single chunk has a shape related to how the entities are located
-		const uint32_t chunkSize = 64;
+		const uint32_t chunkSize = 128;
 		uint32_t chunkToUpdate = 0;
+	};
+
+	struct WindowEvents
+	{
+		std::vector<std::optional<sf::Event>> events;
 	};
 
 	struct GameplayWindowData
