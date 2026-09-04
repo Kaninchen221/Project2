@@ -209,6 +209,11 @@ namespace P2
 				{
 					gameplayWindowData.currentWindow = GameplayWindowLabel::ShowUpgradeWindow;
 				}
+				
+				if (ImGui::MenuItem("Tips"))
+				{
+					gameplayWindowData.currentWindow = GameplayWindowLabel::ShowTips;
+				}
 
 				ImGui::EndMenu();
 			}
@@ -248,6 +253,21 @@ namespace P2
 		}
 		ImGui::SameLine();
 		ImGui::Text("Upgrade Cost: %d", upgradeCost);
+	}
+
+	void ImGuiSystems::GameplayWindowLabel::ShowTips(const DeltaTime&, GameplayData& gameplayData)
+	{
+		ImGui::Text("- Use auto clicker");
+		ImGui::Text("- There is no sense in what are you doing");
+		ImGui::Text("- Suffer");
+
+		if (gameplayData.clickStrength > 1)
+		{
+			if (ImGui::Button("Don't click this button"))
+			{
+				gameplayData.clickStrength = 1;
+			}
+		}
 	}
 
 	void ImGuiSystems::GameplayWindowLabel::ShowDebugStatsWindow(const DeltaTime& deltaTime, GameplayData&)

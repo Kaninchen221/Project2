@@ -160,6 +160,8 @@ namespace P2
 		
 		world.spawnBatch(entitiesCount, positionBatcher, colorBatcher);
 
+		Logger->info("Game world created with {} entities", world.getEntitiesCount());
+
 		// Create the world config resource, to share the world size with systems
 		auto worldConfig = world.addOrGetResource<WorldConfig>();
 		worldConfig->entitiesCount = sf::Vector2i(width, static_cast<int>(windowSize.y / ElementSize));

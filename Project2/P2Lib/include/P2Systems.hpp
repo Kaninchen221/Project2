@@ -77,8 +77,10 @@ namespace P2
 			/// Gameplay windows
 			static void ShowUpgradeWindow(const DeltaTime& deltaTime, GameplayData& gameplayData);
 
+			static void ShowTips(const DeltaTime& deltaTime, GameplayData& gameplayData);
+
 			/// Debug windows
-			static void ShowDebugStatsWindow(const DeltaTime& deltaTime, GameplayData&);
+			static void ShowDebugStatsWindow(const DeltaTime& deltaTime, GameplayData& gameplayData);
 
 			
 		};
