@@ -37,6 +37,9 @@ namespace P2
 		/// Required by the GameplayWindow system
 		world.addResource(GameplayWindowData{});
 
+		/// Required by the gameplay systems
+		world.addResource(GameplayData{});
+
 		createGameWorld();
 
 		const auto elapsedTime = clock.getElapsedTime();
@@ -159,6 +162,10 @@ namespace P2
 
 		// Create the world config resource, to share the world size with systems
 		auto worldConfig = world.addOrGetResource<WorldConfig>();
-		worldConfig->size = sf::Vector2i(width, static_cast<int>(windowSize.y / ElementSize));
+		worldConfig->entitiesCount = sf::Vector2i(width, static_cast<int>(windowSize.y / ElementSize));
+
+		worldConfig->originalWindowSizePixels = sf::Vector2f(static_cast<float>(window->getSize().x), static_cast<float>(window->getSize().y));
+		worldConfig->currentWindowSizePixels = worldConfig->originalWindowSizePixels;
+		worldConfig->windowSizeRatio = sf::Vector2f(1.0f, 1.0f);
 	}
 }

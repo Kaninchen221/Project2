@@ -27,6 +27,7 @@ namespace P2
 			inline static auto Logger = ConsoleLogger::CreateOrGet("PollEvents");
 
 			static void PollEvents(
+				ecs::Resource<WorldConfig> worldConfigResource,
 				ecs::Resource<sf::RenderWindow> renderWindowResource,
 				ecs::Resource<WindowEvents> windowEventsResource
 			);
@@ -69,14 +70,15 @@ namespace P2
 		{
 			static void GameplayWindow(
 				ecs::Resource<GameplayWindowData> gameplayWindowDataResource,
-				ecs::ConstResource<DeltaTime> deltaTimeResource
+				ecs::ConstResource<DeltaTime> deltaTimeResource,
+				ecs::Resource<GameplayData> gameplayDataResource
 			);
 
 			/// Gameplay windows
-			static void ShowUpgradeWindow(const DeltaTime& deltaTime);
+			static void ShowUpgradeWindow(const DeltaTime& deltaTime, GameplayData& gameplayData);
 
 			/// Debug windows
-			static void ShowDebugStatsWindow(const DeltaTime& deltaTime);
+			static void ShowDebugStatsWindow(const DeltaTime& deltaTime, GameplayData&);
 
 			
 		};
@@ -91,7 +93,8 @@ namespace P2
 			static void ProcessClick(
 				DrawableQuery drawableQuery,
 				ecs::ConstResource<WindowEvents> windowEventsResource,
-				ecs::ConstResource<WorldConfig> worldConfigResource
+				ecs::ConstResource<WorldConfig> worldConfigResource,
+				ecs::Resource<GameplayData> gameplayDataResource
 			);
 		};
 	};
