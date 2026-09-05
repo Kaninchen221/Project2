@@ -83,13 +83,17 @@ namespace P2
 				sf::Vertex(posPtr->value + sf::Vector2f(0, 0),						colorPtr->value)
 			};
 
-			[[maybe_unused]]
-			bool result =
+			const bool result =
 				renderData.vertexBuffer.update(
 					vertices.data(),
 					vertices.size(),
 					offset
 				);
+
+			if (!result)
+			{
+				Logger->error("Couldn't update vertex buffer at offset: {}", offset);
+			}
 		}
 
 		renderData.dirtyEntityIndices.clear();
