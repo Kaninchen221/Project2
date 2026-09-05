@@ -4,6 +4,8 @@
 
 #include <imgui-SFML.h>
 
+#include "P2ImGuiUtils.hpp"
+
 using namespace std::chrono_literals;
 
 namespace P2
@@ -189,43 +191,64 @@ namespace P2
 
 	void ImGuiSystems::GameplayWindowLabel::ShowUpgradeWindow(const DeltaTime&, GameplayData& gameplayData)
 	{
-		ImGui::Text("Upgrade window");
+		SubWindowTitle("Upgrade Window");
 
-		ImGui::Text("Current Level: %d", gameplayData.currentLevel);
-		ImGui::Text("Current Experience: %d", gameplayData.currentExperience);
-		ImGui::Text("Click Strength: %d", gameplayData.clickStrength);
+		UpgradeWindowPerChannel(gameplayData.r);
+		ImGui::Separator();
 
-		const int32_t upgradeCost = gameplayData.clickStrength * gameplayData.clickStrength;
+		UpgradeWindowPerChannel(gameplayData.g);
+		ImGui::Separator();
+
+		UpgradeWindowPerChannel(gameplayData.b);
+	}
+
+	void ImGuiSystems::GameplayWindowLabel::UpgradeWindowPerChannel(GameplayDataPerChannel& gameplayDataPerChannel)
+	{
+		// Resolve the problem with doubled label of upgrade buttons
+		ImGui::PushID(gameplayDataPerChannel.name.c_str());
+
+		ImGui::Text(gameplayDataPerChannel.name.c_str());
+		ImGui::Text("Current Experience: %d", gameplayDataPerChannel.currentExperience);
+		ImGui::Text("Click Strength: %d", gameplayDataPerChannel.clickStrength);
+
+		const int32_t upgradeCost = gameplayDataPerChannel.clickStrength * gameplayDataPerChannel.clickStrength;
 		if (ImGui::Button("Upgrade Click Strength"))
 		{
-			if (gameplayData.currentExperience >= upgradeCost)
+			if (gameplayDataPerChannel.currentExperience >= upgradeCost)
 			{
-				gameplayData.currentExperience -= upgradeCost;
-				gameplayData.clickStrength += 1;
+				gameplayDataPerChannel.currentExperience -= upgradeCost;
+				gameplayDataPerChannel.clickStrength += 1;
 			}
 		}
 		ImGui::SameLine();
 		ImGui::Text("Upgrade Cost: %d", upgradeCost);
+
+		ImGui::PopID();
 	}
 
 	void ImGuiSystems::GameplayWindowLabel::ShowTips(const DeltaTime&, GameplayData& gameplayData)
 	{
+		SubWindowTitle("Tips");
+
 		ImGui::Text("- Use auto clicker");
 		ImGui::Text("- There is no sense in what are you doing");
 		ImGui::Text("- Suffer");
 
-		if (gameplayData.clickStrength > 1)
+		if (gameplayData.r.clickStrength > 1)
 		{
 			if (ImGui::Button("Don't click this button"))
 			{
-				gameplayData.clickStrength = 1;
+				gameplayData.r.clickStrength = 1;
+				gameplayData.g.clickStrength = 1;
+				gameplayData.b.clickStrength = 1;
 			}
 		}
 	}
 
 	void ImGuiSystems::GameplayWindowLabel::ShowDebugStatsWindow(const DeltaTime& deltaTime, GameplayData&)
 	{
-		ImGui::Text("Debug Stats window");
+		SubWindowTitle("Debug Stats Window");
+
 		const float deltaTimeAsMS = deltaTime.value.asSeconds() * 1000.f;
 		ImGui::Text("Delta time: %.3f ms", deltaTimeAsMS);
 		ImGui::Text("FPS: %.3f", 1000.f /*1 second as ms*/ / deltaTimeAsMS);
@@ -283,20 +306,24 @@ namespace P2
 						return diff;
 					};
 
-				sf::Vector3i experience;
-				experience.x = -affectColorChannel(colorPtr->value.r, gameplayData.clickStrength);
-				experience.y = -affectColorChannel(colorPtr->value.g, gameplayData.clickStrength);
-				experience.z = -affectColorChannel(colorPtr->value.b, gameplayData.clickStrength);
+				sf::Vector3<int32_t> experience;
+				experience.x = -affectColorChannel(colorPtr->value.r, gameplayData.r.clickStrength);
+				experience.y = -affectColorChannel(colorPtr->value.g, gameplayData.g.clickStrength);
+				experience.z = -affectColorChannel(colorPtr->value.b, gameplayData.b.clickStrength);
 
 				// Mark the entity as dirty in the render data
 				renderData.dirtyEntityIndices.emplace_back(clickedEntityIndex);
 
 				// Affect gameplay data
 				// Add experience
-				[](GameplayData& gameplayData, const sf::Vector3i& experience)
-				{
-					gameplayData.currentExperience += experience.x + experience.y + experience.z;
-				}(gameplayData, experience);
+				auto affectExperience = 
+					[](GameplayDataPerChannel& gameplayDataPerChannel, const int32_t experience)
+					{
+						gameplayDataPerChannel.currentExperience += experience;
+					};
+				affectExperience(gameplayData.r, experience.x);
+				affectExperience(gameplayData.g, experience.y);
+				affectExperience(gameplayData.b, experience.z);
 			}
 		}
 	}

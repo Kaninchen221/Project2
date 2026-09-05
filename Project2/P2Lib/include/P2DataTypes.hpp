@@ -15,11 +15,18 @@ namespace P2
 	// TODO (mid): Move this to the WorldConfig resource
 	inline static float ElementSize = 1024;
 
+	struct GameplayDataPerChannel
+	{
+		std::string name;
+		int32_t clickStrength = 1;
+		int32_t currentExperience = 0;
+	};
+
 	struct GameplayData
 	{
-		int32_t clickStrength = 1;
-		int32_t currentLevel = 1;
-		int32_t currentExperience = 0;
+		GameplayDataPerChannel r{ "Red" };
+		GameplayDataPerChannel g{ "Green" };
+		GameplayDataPerChannel b{ "Blue" };
 	};
 
 	struct WorldConfig

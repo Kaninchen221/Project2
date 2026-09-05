@@ -76,6 +76,7 @@ namespace P2
 
 			/// Gameplay windows
 			static void ShowUpgradeWindow(const DeltaTime& deltaTime, GameplayData& gameplayData);
+			static void UpgradeWindowPerChannel(GameplayDataPerChannel& gameplayDataPerChannel);
 
 			static void ShowTips(const DeltaTime& deltaTime, GameplayData& gameplayData);
 

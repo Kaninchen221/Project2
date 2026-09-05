@@ -144,21 +144,15 @@ namespace P2
 				return Position(sf::Vector2f(float(index % width) * ElementSize, float(index / width) * ElementSize));
 			};
 		
-		std::random_device rd;
-		std::mt19937 gen(rd());
-		
-		std::uniform_int_distribution<uint32_t> dist(0, std::numeric_limits<uint32_t>::max());
-		
 		auto colorBatcher =
-			[entitiesCount = entitiesCount, &gen = gen, &dist = dist]
+			[entitiesCount = entitiesCount]
 			([[maybe_unused]] int64_t index) -> Color
 			{
 				// TODO (mid): We should first give the player one channel of color, 
 				// and then the other channels will be unlocked as the player progresses
 
-				/// We are using the sf::Color(uint32_t) constructor to optimize it
 				return Color( 
-					sf::Color::White
+					sf::Color::Red
 				);
 			};
 		
