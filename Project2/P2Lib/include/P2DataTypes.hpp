@@ -6,10 +6,14 @@
 
 #include <SFML/Graphics.hpp>
 
+// TODO (mid): World changing
+// After meeting a few requirements we should get a new world with smalled element size
+// And the smallest element size should be 1
+
 namespace P2
 {	
 	// TODO (mid): Move this to the WorldConfig resource
-	inline static float ElementSize = 16;
+	inline static float ElementSize = 1024;
 
 	struct GameplayData
 	{
