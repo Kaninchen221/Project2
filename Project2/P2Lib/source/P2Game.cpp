@@ -136,7 +136,7 @@ namespace P2
 		
 		const auto windowSize = window->getView().getSize();
 
-		const int64_t entitiesCount = static_cast<int64_t>(windowSize.x * windowSize.y / ElementSize);
+		const int64_t entitiesCount = static_cast<int64_t>(std::ceil((windowSize.x / ElementSize) * (windowSize.y / ElementSize)));
 		const auto width = static_cast<int32_t>(windowSize.x / ElementSize);
 		auto positionBatcher =
 			[width = width](int64_t index) -> Position
@@ -153,10 +153,12 @@ namespace P2
 			[entitiesCount = entitiesCount, &gen = gen, &dist = dist]
 			([[maybe_unused]] int64_t index) -> Color
 			{
+				// TODO (mid): We should first give the player one channel of color, 
+				// and then the other channels will be unlocked as the player progresses
+
 				/// We are using the sf::Color(uint32_t) constructor to optimize it
 				return Color( 
-					//sf::Color(dist(gen))
-					sf::Color::Green
+					sf::Color::White
 				);
 			};
 		
