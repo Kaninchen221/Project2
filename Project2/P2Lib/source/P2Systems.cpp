@@ -222,7 +222,9 @@ namespace P2
 	void ImGuiSystems::GameplayWindowLabel::ShowDebugStatsWindow(const DeltaTime& deltaTime, GameplayData&)
 	{
 		ImGui::Text("Debug Stats window");
-		ImGui::Text("Delta time: %.3f ms", deltaTime.value.asSeconds() * 1000.f);
+		const float deltaTimeAsMS = deltaTime.value.asSeconds() * 1000.f;
+		ImGui::Text("Delta time: %.3f ms", deltaTimeAsMS);
+		ImGui::Text("FPS: %.3f", 1000.f /*1 second as ms*/ / deltaTimeAsMS);
 	}
 
 	void GameplaySystems::ProcessClickLabel::ProcessClick(
