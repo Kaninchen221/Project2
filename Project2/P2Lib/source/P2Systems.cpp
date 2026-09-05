@@ -283,7 +283,7 @@ namespace P2
 
 				Logger->trace("Mouse clicked at element: {}, {}", clickedAt.x, clickedAt.y);
 
-				const auto clickedEntityIndex = clickedAt.x + (worldConfig.entitiesCount.x * clickedAt.y);
+				const auto clickedEntityIndex = clickedAt.x + (worldConfig.worldSize.x * clickedAt.y);
 				Logger->trace("Mouse clicked at element: {}", clickedEntityIndex);
 				
 				// Check bounds

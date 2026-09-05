@@ -31,7 +31,9 @@ namespace P2
 
 	struct WorldConfig
 	{
-		sf::Vector2i entitiesCount;
+		// Count of entities in the world, in X and Y dimensions
+		sf::Vector2<int32_t> worldSize;
+		int64_t entitiesCount = 0;
 		sf::Vector2f originalWindowSizePixels;
 		sf::Vector2f currentWindowSizePixels;
 		sf::Vector2f windowSizeRatio;

@@ -136,17 +136,16 @@ namespace P2
 		
 		const auto windowSize = window->getView().getSize();
 
-		const int64_t entitiesCount = static_cast<int64_t>(std::ceil((windowSize.x / ElementSize) * (windowSize.y / ElementSize)));
-		const auto width = static_cast<int32_t>(windowSize.x / ElementSize);
+		const sf::Vector2<int32_t> worldSize(static_cast<int32_t>(std::ceil(windowSize.x / ElementSize)), static_cast<int32_t>(std::ceil(windowSize.y / ElementSize)));
+		const int64_t entitiesCount = static_cast<int64_t>(worldSize.x * worldSize.y);
 		auto positionBatcher =
-			[width = width](int64_t index) -> Position
+			[worldSizeX = worldSize.x](int64_t index) -> Position
 			{
-				return Position(sf::Vector2f(float(index % width) * ElementSize, float(index / width) * ElementSize));
+				return Position(sf::Vector2f(float(index % worldSizeX) * ElementSize, float(index / worldSizeX) * ElementSize));
 			};
 		
 		auto colorBatcher =
-			[entitiesCount = entitiesCount]
-			([[maybe_unused]] int64_t index) -> Color
+			[]([[maybe_unused]] int64_t index) -> Color
 			{
 				// TODO (mid): We should first give the player one channel of color, 
 				// and then the other channels will be unlocked as the player progresses
@@ -162,8 +161,8 @@ namespace P2
 
 		// Create the world config resource, to share the world size with systems
 		auto worldConfig = world.addOrGetResource<WorldConfig>();
-		worldConfig->entitiesCount = sf::Vector2i(width, static_cast<int>(windowSize.y / ElementSize));
-
+		worldConfig->worldSize = worldSize;
+		worldConfig->entitiesCount = entitiesCount;
 		worldConfig->originalWindowSizePixels = sf::Vector2f(static_cast<float>(window->getSize().x), static_cast<float>(window->getSize().y));
 		worldConfig->currentWindowSizePixels = worldConfig->originalWindowSizePixels;
 		worldConfig->windowSizeRatio = sf::Vector2f(1.0f, 1.0f);
