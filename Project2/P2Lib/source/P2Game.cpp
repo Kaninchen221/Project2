@@ -42,6 +42,8 @@ namespace P2
 
 		createGameWorld();
 
+		createRenderData();
+
 		const auto elapsedTime = clock.getElapsedTime();
 		Logger->info("Game initialized: {}ms", elapsedTime.getAsMilliseconds().count());
 		return true;
@@ -169,5 +171,75 @@ namespace P2
 		worldConfig->originalWindowSizePixels = sf::Vector2f(static_cast<float>(window->getSize().x), static_cast<float>(window->getSize().y));
 		worldConfig->currentWindowSizePixels = worldConfig->originalWindowSizePixels;
 		worldConfig->windowSizeRatio = sf::Vector2f(1.0f, 1.0f);
+	}
+
+	void Game::createRenderData()
+	{
+		auto renderDataResource = world.addOrGetResource<RenderData>();
+		if (!renderDataResource)
+		{
+			Logger->critical("Couldn't create or get RenderData resource");
+			return;
+		}
+		auto& renderData = *renderDataResource;
+
+		auto drawableQuery = ecs::Query<Position, Color>(world);
+
+		constexpr int32_t verticesPerObject = 6;
+		auto& vertexBuffer = renderData.vertexBuffer;
+
+		/// Create Vertex Buffer if it's not created
+		// TODO (mid): Refactor the componentPerTypeCount, create a function in the query
+		const auto componentPerTypeCount = static_cast<uint32_t>(drawableQuery.getComponentCount() / drawableQuery.getTypeCount());
+		if (!renderData.isVertexBufferCreated)
+		{
+			const auto vertexCount = componentPerTypeCount * verticesPerObject;
+			if (!vertexBuffer.create(vertexCount))
+			{
+				Logger->error("Couldn't create vertex buffer, vertex count: {}", vertexCount);
+				return;
+			}
+			vertexBuffer.setPrimitiveType(sf::PrimitiveType::Triangles);
+			vertexBuffer.setUsage(sf::VertexBuffer::Usage::Stream);
+		}
+
+		const auto vertexCount = componentPerTypeCount * verticesPerObject;
+		std::vector<sf::Vertex> vertices;
+		vertices.reserve(vertexCount);
+
+		auto it = drawableQuery.begin();
+		while (it != drawableQuery.end())
+		{
+			auto [positionPtr, colorPtr] = *it;
+			const auto& position = *positionPtr;
+			const auto& color = *colorPtr;
+
+			std::array<sf::Vertex, verticesPerObject> singleObjectVertices;
+			singleObjectVertices[0].position = sf::Vector2f{ 0, 0 } + position.value;
+			singleObjectVertices[1].position = sf::Vector2f{ ElementSize, 0 } + position.value;
+			singleObjectVertices[2].position = sf::Vector2f{ ElementSize, ElementSize } + position.value;
+			singleObjectVertices[3].position = sf::Vector2f{ ElementSize, ElementSize } + position.value;
+			singleObjectVertices[4].position = sf::Vector2f{ 0, ElementSize } + position.value;
+			singleObjectVertices[5].position = sf::Vector2f{ 0, 0 } + position.value;
+
+			singleObjectVertices[0].color = color.value;
+			singleObjectVertices[1].color = color.value;
+			singleObjectVertices[2].color = color.value;
+			singleObjectVertices[3].color = color.value;
+			singleObjectVertices[4].color = color.value;
+			singleObjectVertices[5].color = color.value;
+
+			vertices.append_range(singleObjectVertices);
+
+			++it;
+		}
+
+		if (!vertexBuffer.update(vertices.data()))
+		{
+			Logger->error("Couldn't update vertex buffer");
+			return;
+		}
+
+		renderData.isVertexBufferCreated = true;
 	}
 }

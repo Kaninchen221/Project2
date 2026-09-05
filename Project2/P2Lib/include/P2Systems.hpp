@@ -96,7 +96,8 @@ namespace P2
 				DrawableQuery drawableQuery,
 				ecs::ConstResource<WindowEvents> windowEventsResource,
 				ecs::ConstResource<WorldConfig> worldConfigResource,
-				ecs::Resource<GameplayData> gameplayDataResource
+				ecs::Resource<GameplayData> gameplayDataResource,
+				ecs::Resource<RenderData> renderDataResource
 			);
 		};
 	};

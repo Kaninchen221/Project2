@@ -40,6 +40,8 @@ namespace P2
 
 		void createWindow();
 		void createGameWorld();
+		// Should be invoked after createGameWorld
+		void createRenderData();
 
 		bool requestedClose = false;
 

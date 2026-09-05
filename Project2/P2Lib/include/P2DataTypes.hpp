@@ -43,13 +43,12 @@ namespace P2
 
 	struct RenderData
 	{
-		bool isDirty = true;
+		static constexpr int32_t VerticesPerObject = 6;
+
 		sf::VertexBuffer vertexBuffer;
 		bool isVertexBufferCreated = false;
 
-		/// Single chunk has a shape related to how the entities are located
-		const uint32_t chunkSize = 4096;
-		uint32_t chunkToUpdate = 0;
+		std::vector<int32_t> dirtyEntityIndices;
 	};
 
 	struct WindowEvents

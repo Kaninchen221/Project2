@@ -60,90 +60,39 @@ namespace P2
 		ecs::Resource<RenderData> renderDataRes
 	)
 	{
-		// TODO (high): Optimize it, perhaps when we change the color of an element then we want to somehow mark it as dirty
-
 		auto& renderData = *renderDataRes;
-		if (!renderData.isDirty)
-		{
-			Logger->trace("render data is not dirty");
-			return;
-		}
-
-		constexpr int32_t verticesPerObject = 6;
-		auto& vertexBuffer = renderData.vertexBuffer;
-
-		/// Create Vertex Buffer if it's not created
-		// TODO (mid): Refactor the componentPerTypeCount, create a function in the query
-		const auto componentPerTypeCount = static_cast<uint32_t>(drawableQuery.getComponentCount() / drawableQuery.getTypeCount());
 		if (!renderData.isVertexBufferCreated)
 		{
-			const auto vertexCount = componentPerTypeCount * verticesPerObject;
-			if (!vertexBuffer.create(vertexCount))
-			{
-				Logger->error("Couldn't create vertex buffer, vertex count: {}", vertexCount);
-				return;
-			}
-			vertexBuffer.setPrimitiveType(sf::PrimitiveType::Triangles);
-			vertexBuffer.setUsage(sf::VertexBuffer::Usage::Static);
-		}
-
-		const uint32_t firstObject = renderData.chunkToUpdate * renderData.chunkSize;
-		auto it = drawableQuery[firstObject];
-
-		const auto rectCountToUpdate =
-			[&renderData = renderData, componentPerTypeCount = componentPerTypeCount, firstObject = firstObject]() -> uint32_t
-			{ 
-				return std::min(renderData.chunkSize, componentPerTypeCount - firstObject);
-			}();
-
-		const auto vertexCount = renderData.chunkSize * verticesPerObject;
-		std::vector<sf::Vertex> vertices;
-		vertices.reserve(vertexCount);
-
-		size_t index = 0;
-		while (index != rectCountToUpdate)
-		{
-			auto [positionPtr, colorPtr] = *it;
-			const auto& position = *positionPtr;
-			const auto& color = *colorPtr;
-
-			std::array<sf::Vertex, verticesPerObject> singleObjectVertices;
-			singleObjectVertices[0].position = sf::Vector2f{ 0, 0 } + position.value;
-			singleObjectVertices[1].position = sf::Vector2f{ ElementSize, 0 } + position.value;
-			singleObjectVertices[2].position = sf::Vector2f{ ElementSize, ElementSize } + position.value;
-			singleObjectVertices[3].position = sf::Vector2f{ ElementSize, ElementSize } + position.value;
-			singleObjectVertices[4].position = sf::Vector2f{ 0, ElementSize } + position.value;
-			singleObjectVertices[5].position = sf::Vector2f{ 0, 0 } + position.value;
-
-			singleObjectVertices[0].color = color.value;
-			singleObjectVertices[1].color = color.value;
-			singleObjectVertices[2].color = color.value;
-			singleObjectVertices[3].color = color.value;
-			singleObjectVertices[4].color = color.value;
-			singleObjectVertices[5].color = color.value;
-
-			vertices.append_range(singleObjectVertices);
-
-			//Logger->info("Vertex offset: {}", vertexOffset);
-
-			++index;
-			++it;
-		}
-
-		const uint32_t vertexOffset = firstObject * verticesPerObject;
-		if (!vertexBuffer.update(vertices.data(), vertices.size(), vertexOffset))
-		{
-			Logger->error("Couldn't update vertex buffer, offset: {}, index: {}", vertexOffset, index);
+			Logger->critical("Vertex buffer is not created");
 			return;
 		}
 
-		++renderData.chunkToUpdate;
-
-		const auto chunkCount = componentPerTypeCount / renderData.chunkSize;
-		if (renderData.chunkToUpdate == chunkCount)
+		for (const auto entityIndex : renderData.dirtyEntityIndices)
 		{
-			renderData.chunkToUpdate = 0;
+			auto [posPtr, colorPtr] = drawableQuery[entityIndex].operator*();
+
+			// Update the vertex buffer with the new color
+			const unsigned int offset = entityIndex * RenderData::VerticesPerObject;
+			const std::array<sf::Vertex, RenderData::VerticesPerObject> vertices =
+			{
+				sf::Vertex(posPtr->value + sf::Vector2f(0, 0),						colorPtr->value),
+				sf::Vertex(posPtr->value + sf::Vector2f(ElementSize, 0),			colorPtr->value),
+				sf::Vertex(posPtr->value + sf::Vector2f(ElementSize, ElementSize),	colorPtr->value),
+				sf::Vertex(posPtr->value + sf::Vector2f(ElementSize, ElementSize),	colorPtr->value),
+				sf::Vertex(posPtr->value + sf::Vector2f(0, ElementSize),			colorPtr->value),
+				sf::Vertex(posPtr->value + sf::Vector2f(0, 0),						colorPtr->value)
+			};
+
+			[[maybe_unused]]
+			bool result =
+				renderData.vertexBuffer.update(
+					vertices.data(),
+					vertices.size(),
+					offset
+				);
 		}
+
+		renderData.dirtyEntityIndices.clear();
 	}
 
 	void WindowSystems::RenderLabel::Render(
@@ -280,12 +229,14 @@ namespace P2
 		DrawableQuery drawableQuery,
 		ecs::ConstResource<WindowEvents> windowEventsResource,
 		ecs::ConstResource<WorldConfig> worldConfigResource,
-		ecs::Resource<GameplayData> gameplayDataResource
+		ecs::Resource<GameplayData> gameplayDataResource,
+		ecs::Resource<RenderData> renderDataResource
 	)
 	{
 		auto& windowEvents = *windowEventsResource;
 		auto& worldConfig = *worldConfigResource;
 		auto& gameplayData = *gameplayDataResource;
+		auto& renderData = *renderDataResource;
 
 		for (const auto& event : windowEvents.events)
 		{
@@ -330,6 +281,9 @@ namespace P2
 				experience.x = -affectColorChannel(colorPtr->value.r, gameplayData.clickStrength);
 				experience.y = -affectColorChannel(colorPtr->value.g, gameplayData.clickStrength);
 				experience.z = -affectColorChannel(colorPtr->value.b, gameplayData.clickStrength);
+
+				// Mark the entity as dirty in the render data
+				renderData.dirtyEntityIndices.emplace_back(clickedEntityIndex);
 
 				// Affect gameplay data
 				// Add experience
