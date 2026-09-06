@@ -203,10 +203,17 @@ namespace P2
 		UpgradeWindowPerChannel(gameplayData.r);
 		ImGui::Separator();
 
-		UpgradeWindowPerChannel(gameplayData.g);
-		ImGui::Separator();
+		if (worldConfig.avaiableChannelsCountPerEntity > 1)
+		{
+			UpgradeWindowPerChannel(gameplayData.g);
+			ImGui::Separator();
+		}
 
-		UpgradeWindowPerChannel(gameplayData.b);
+		if (worldConfig.avaiableChannelsCountPerEntity > 2)
+		{
+			UpgradeWindowPerChannel(gameplayData.b);
+			ImGui::Separator();
+		}
 		//ImGui::Separator();
 
 		ShowGameplayStats(worldConfig, gameplayData);
