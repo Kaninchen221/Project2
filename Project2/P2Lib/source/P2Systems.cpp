@@ -141,12 +141,11 @@ namespace P2
 	void ImGuiSystems::GameplayWindowLabel::GameplayWindow(
 		ecs::Resource<GameplayWindowData> gameplayWindowDataResource,
 		ecs::ConstResource<DeltaTime> deltaTimeResource,
-		ecs::Resource<GameplayData> gameplayDataResource
+		ecs::Resource<GameplayData> gameplayDataResource,
+		ecs::ConstResource<WorldConfig> worldConfigResource
 	)
 	{
 		auto& gameplayWindowData = *gameplayWindowDataResource;
-		auto& deltaTime = *deltaTimeResource;
-		auto& gameplayData = *gameplayDataResource;
 
 		//ImGui::ShowDemoWindow();
 		if (!gameplayWindowData.currentWindow)
@@ -184,13 +183,21 @@ namespace P2
 			ImGui::EndMenuBar();
 		}
 
-		std::invoke(gameplayWindowData.currentWindow, deltaTime, gameplayData);
+		GameplayWindowParamPack paramPack {
+			*deltaTimeResource,
+			*gameplayDataResource,
+			*worldConfigResource
+		};
+		std::invoke(gameplayWindowData.currentWindow, paramPack);
 
 		ImGui::End();
 	}
 
-	void ImGuiSystems::GameplayWindowLabel::ShowUpgradeWindow(const DeltaTime&, GameplayData& gameplayData)
+	void ImGuiSystems::GameplayWindowLabel::ShowUpgradeWindow(GameplayWindowParamPack& gameplayWindowData)
 	{
+		auto& gameplayData = gameplayWindowData.gameplayData;
+		auto& worldConfig = gameplayWindowData.worldConfig;
+
 		SubWindowTitle("Upgrade Window");
 
 		UpgradeWindowPerChannel(gameplayData.r);
@@ -200,6 +207,9 @@ namespace P2
 		ImGui::Separator();
 
 		UpgradeWindowPerChannel(gameplayData.b);
+		//ImGui::Separator();
+
+		ShowGameplayStats(worldConfig, gameplayData);
 	}
 
 	void ImGuiSystems::GameplayWindowLabel::UpgradeWindowPerChannel(GameplayDataPerChannel& gameplayDataPerChannel)
@@ -226,8 +236,32 @@ namespace P2
 		ImGui::PopID();
 	}
 
-	void ImGuiSystems::GameplayWindowLabel::ShowTips(const DeltaTime&, GameplayData& gameplayData)
+	void ImGuiSystems::GameplayWindowLabel::ShowGameplayStats(const WorldConfig& worldConfig, const GameplayData& gameplayData)
 	{
+		ImGui::NewLine(); // Horizontal spacing
+		SubWindowTitle("GameplayStats");
+
+		ImGui::Text("Available Channels: %d", worldConfig.avaiableChannelsCountPerEntity);
+		ImGui::SetItemTooltip("Every quad has channels that define its color, at the start only the red channel is available");
+		ImGui::Text("Required Experience: %d", worldConfig.requiredExperienceToFinishCurrentLevel);
+		ImGui::SetItemTooltip("Required experience to finish the current level");
+		ImGui::Text("Total Experience: %d", gameplayData.totalExperience);
+		const float completePercentage = std::roundf(static_cast<float>(gameplayData.totalExperience) / static_cast<float>(worldConfig.requiredExperienceToFinishCurrentLevel) * 100.f);
+		ImGui::Text("Complete percentage: %.0f%%", completePercentage);
+
+		if (completePercentage >= 100.f)
+		{
+			if (ImGui::Button("Next Level"))
+			{
+				// TODO (high): Request next level
+			}
+		}
+	}
+
+	void ImGuiSystems::GameplayWindowLabel::ShowTips(GameplayWindowParamPack& gameplayWindowData)
+	{
+		auto& gameplayData = gameplayWindowData.gameplayData;
+
 		SubWindowTitle("Tips");
 
 		ImGui::Text("- Use auto clicker");
@@ -245,8 +279,10 @@ namespace P2
 		}
 	}
 
-	void ImGuiSystems::GameplayWindowLabel::ShowDebugStatsWindow(const DeltaTime& deltaTime, GameplayData&)
+	void ImGuiSystems::GameplayWindowLabel::ShowDebugStatsWindow(GameplayWindowParamPack& gameplayWindowData)
 	{
+		auto& deltaTime = gameplayWindowData.deltaTime;
+
 		SubWindowTitle("Debug Stats Window");
 
 		const float deltaTimeAsMS = deltaTime.value.asSeconds() * 1000.f;
@@ -317,9 +353,10 @@ namespace P2
 				// Affect gameplay data
 				// Add experience
 				auto affectExperience = 
-					[](GameplayDataPerChannel& gameplayDataPerChannel, const int32_t experience)
+					[&totalExperience = gameplayData.totalExperience](GameplayDataPerChannel& gameplayDataPerChannel, const int32_t experience)
 					{
 						gameplayDataPerChannel.currentExperience += experience;
+						totalExperience += experience;
 					};
 				affectExperience(gameplayData.r, experience.x);
 				affectExperience(gameplayData.g, experience.y);

@@ -27,16 +27,22 @@ namespace P2
 		GameplayDataPerChannel r{ "Red" };
 		GameplayDataPerChannel g{ "Green" };
 		GameplayDataPerChannel b{ "Blue" };
+
+		int64_t totalExperience = 0;
 	};
 
 	struct WorldConfig
 	{
+		constexpr static int32_t MaxChannelValue = 255;
+
 		// Count of entities in the world, in X and Y dimensions
 		sf::Vector2<int32_t> worldSize;
 		int64_t entitiesCount = 0;
 		sf::Vector2f originalWindowSizePixels;
 		sf::Vector2f currentWindowSizePixels;
 		sf::Vector2f windowSizeRatio;
+		int32_t avaiableChannelsCountPerEntity = 0;
+		int64_t requiredExperienceToFinishCurrentLevel = 0;
 	};
 
 	struct DeltaTime
@@ -69,8 +75,15 @@ namespace P2
 		std::vector<std::optional<sf::Event>> events;
 	};
 
+	struct GameplayWindowParamPack
+	{
+		const DeltaTime& deltaTime;
+		GameplayData& gameplayData;
+		const WorldConfig& worldConfig;
+	};
+
 	struct GameplayWindowData
 	{
-		std::function<void(const DeltaTime&, GameplayData&)> currentWindow;
+		std::function<void(GameplayWindowParamPack&)> currentWindow;
 	};
 }

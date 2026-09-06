@@ -71,19 +71,20 @@ namespace P2
 			static void GameplayWindow(
 				ecs::Resource<GameplayWindowData> gameplayWindowDataResource,
 				ecs::ConstResource<DeltaTime> deltaTimeResource,
-				ecs::Resource<GameplayData> gameplayDataResource
+				ecs::Resource<GameplayData> gameplayDataResource,
+				ecs::ConstResource<WorldConfig> worldConfigResource
 			);
 
 			/// Gameplay windows
-			static void ShowUpgradeWindow(const DeltaTime& deltaTime, GameplayData& gameplayData);
+			static void ShowUpgradeWindow(GameplayWindowParamPack& gameplayWindowData);
 			static void UpgradeWindowPerChannel(GameplayDataPerChannel& gameplayDataPerChannel);
+			static void ShowGameplayStats(const WorldConfig& worldConfig, const GameplayData& gameplayData);
 
-			static void ShowTips(const DeltaTime& deltaTime, GameplayData& gameplayData);
+			static void ShowTips(GameplayWindowParamPack& gameplayWindowData);
 
 			/// Debug windows
-			static void ShowDebugStatsWindow(const DeltaTime& deltaTime, GameplayData& gameplayData);
+			static void ShowDebugStatsWindow(GameplayWindowParamPack& gameplayWindowData);
 
-			
 		};
 	};
 
