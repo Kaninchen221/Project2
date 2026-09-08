@@ -37,6 +37,18 @@ namespace P2::ecs::tests
 		testSpawnComponent<NonCopyableClass>();
 	}
 
+	TEST_F(ECSWorldCommandsTests, SpawnBatchTest)
+	{
+		int64_t entitiesCount = 10;
+		{
+			WorldCommands worldCommands{ world };
+			worldCommands.spawnBatch(entitiesCount, [](int64_t) { return Position{}; });
+		}
+
+		world.executeCommands();
+		ASSERT_EQ(world.getEntitiesCount(), entitiesCount);
+	}
+
 	TEST_F(ECSWorldCommandsTests, RemoveEntityTest)
 	{
 		Entity entity{ {}, {} };

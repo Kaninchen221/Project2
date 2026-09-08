@@ -42,7 +42,10 @@ namespace P2::ecs
 			};
 
 			commands.push_back(command);
-		}
+		}		
+		
+		template<class... Components>
+		void spawnBatch(int64_t count, Components&&... components);
 
 		void remove(const Entity& entity)
 		{
@@ -76,4 +79,22 @@ namespace P2::ecs
 		World::Commands commands;
 
 	};
+
+	template<class... Components>
+	inline void WorldCommands::spawnBatch(int64_t count, Components&&... components)
+	{
+		auto asTuple = std::tuple(std::forward<Components>(components)...);
+
+		auto command =
+			[components = std::move(asTuple), count = count]
+			(World& world) mutable
+			{
+				std::apply([&](auto&&... args)
+					{
+						world.spawnBatch(count, std::forward<decltype(args)>(args)...);
+					}, components);
+			};
+
+		commands.push_back(command);
+	}
 }
