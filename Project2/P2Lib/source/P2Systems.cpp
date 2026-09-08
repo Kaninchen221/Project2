@@ -124,6 +124,82 @@ namespace P2
 		window.display();
 	}
 
+	void WindowSystems::RecreateRenderDataLabel::RecreateRenderData(
+		ecs::Resource<WorldConfig> worldConfigResource,
+		DrawableConstQuery drawableQuery, 
+		ecs::Resource<RenderData> renderDataRes
+	)
+	{
+		auto& worldConfig = *worldConfigResource;
+		auto& renderData = *renderDataRes;
+
+		if (!worldConfig.needsRecreateRenderData)
+		{
+			return;
+		}
+
+		constexpr int32_t verticesPerObject = 6;
+		auto& vertexBuffer = renderData.vertexBuffer;
+
+		/// Create Vertex Buffer if it's not created
+		// TODO (mid): Refactor the componentPerTypeCount, create a function in the query
+		const auto componentPerTypeCount = static_cast<uint32_t>(drawableQuery.getComponentCount() / drawableQuery.getTypeCount());
+		
+		// TODO (mid): Remove this check and 'isVertexBufferCreated' var
+		if (!renderData.isVertexBufferCreated)
+		{
+			vertexBuffer = sf::VertexBuffer{}; // To make sure that the underlying buffer was properly released
+			const auto vertexCount = componentPerTypeCount * verticesPerObject;
+			if (!vertexBuffer.create(vertexCount))
+			{
+				Logger->error("Couldn't create vertex buffer, vertex count: {}", vertexCount);
+				return;
+			}
+			vertexBuffer.setPrimitiveType(sf::PrimitiveType::Triangles);
+			vertexBuffer.setUsage(sf::VertexBuffer::Usage::Stream);
+		}
+
+		const auto vertexCount = componentPerTypeCount * verticesPerObject;
+		std::vector<sf::Vertex> vertices;
+		vertices.reserve(vertexCount);
+
+		auto it = drawableQuery.begin();
+		while (it != drawableQuery.end())
+		{
+			auto [positionPtr, colorPtr] = *it;
+			const auto& position = *positionPtr;
+			const auto& color = *colorPtr;
+
+			std::array<sf::Vertex, verticesPerObject> singleObjectVertices;
+			singleObjectVertices[0].position = sf::Vector2f{ 0, 0 } + position.value;
+			singleObjectVertices[1].position = sf::Vector2f{ ElementSize, 0 } + position.value;
+			singleObjectVertices[2].position = sf::Vector2f{ ElementSize, ElementSize } + position.value;
+			singleObjectVertices[3].position = sf::Vector2f{ ElementSize, ElementSize } + position.value;
+			singleObjectVertices[4].position = sf::Vector2f{ 0, ElementSize } + position.value;
+			singleObjectVertices[5].position = sf::Vector2f{ 0, 0 } + position.value;
+
+			singleObjectVertices[0].color = color.value;
+			singleObjectVertices[1].color = color.value;
+			singleObjectVertices[2].color = color.value;
+			singleObjectVertices[3].color = color.value;
+			singleObjectVertices[4].color = color.value;
+			singleObjectVertices[5].color = color.value;
+
+			vertices.append_range(singleObjectVertices);
+
+			++it;
+		}
+
+		if (!vertexBuffer.update(vertices.data()))
+		{
+			Logger->error("Couldn't update vertex buffer");
+			return;
+		}
+
+		renderData.isVertexBufferCreated = true;
+		worldConfig.needsRecreateRenderData = false;
+	}
+
 	void ImGuiSystems::ImGuiUpdateLabel::ImGuiUpdate(
 		ecs::Resource<sf::RenderWindow> renderWindowResource,
 		ecs::ConstResource<DeltaTime> deltaTimeResource
@@ -370,6 +446,42 @@ namespace P2
 				affectExperience(gameplayData.b, experience.z);
 			}
 		}
+	}
+
+	void GameplaySystems::CreateWorldLabel::CreateWorld(
+		ecs::Resource<WorldConfig> worldConfigResource,
+		ecs::WorldCommands worldCommands
+	)
+	{
+		// TODO (high): Erase all drawable entities first
+
+		auto& worldConfig = *worldConfigResource;
+		if (!worldConfig.needsRecreateWorld)
+		{
+			return;
+		}
+
+		auto positionBatcher =
+			[worldSizeX = worldConfig.worldSize.x](int64_t index) -> Position
+			{
+				return Position(sf::Vector2f(float(index % worldSizeX) * ElementSize, float(index / worldSizeX) * ElementSize));
+			};
+
+		auto colorBatcher =
+			[]([[maybe_unused]] int64_t index) -> Color
+			{
+				// TODO (mid): We should first give the player one channel of color, 
+				// and then the other channels will be unlocked as the player progresses
+
+				return Color(
+					sf::Color::Red
+				);
+			};
+
+		worldCommands.spawnBatch(worldConfig.entitiesCount, positionBatcher, colorBatcher);
+
+		worldConfig.needsRecreateWorld = false;
+		worldConfig.needsRecreateRenderData = true;
 	}
 
 }

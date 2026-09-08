@@ -16,6 +16,12 @@ namespace P2
 
 		createWindow();
 
+		createGameWorldConfig();
+
+		schedule.addSystem(GameplaySystems::CreateWorldLabel{}, GameplaySystems::CreateWorldLabel::CreateWorld);
+
+		schedule.addSystem(WindowSystems::RecreateRenderDataLabel{}, WindowSystems::RecreateRenderDataLabel::RecreateRenderData, ecs::After(GameplaySystems::CreateWorldLabel{}), ecs::Before(WindowSystems::BuildRenderDataLabel{}));
+
 		schedule.addSystem(WindowSystems::PollEventsLabel{}, WindowSystems::PollEventsLabel::PollEvents, ecs::MainThread{}, ecs::Before(WindowSystems::RenderLabel{}));
 		schedule.addSystem(WindowSystems::BuildRenderDataLabel{}, WindowSystems::BuildRenderDataLabel::BuildRenderData, ecs::Before(WindowSystems::RenderLabel{}));
 		schedule.addSystem(WindowSystems::RenderLabel{}, WindowSystems::RenderLabel::Render, ecs::MainThread{});
@@ -39,10 +45,6 @@ namespace P2
 
 		/// Required by the gameplay systems
 		world.addResource(GameplayData{});
-
-		createGameWorld();
-
-		createRenderData();
 
 		const auto elapsedTime = clock.getElapsedTime();
 		Logger->info("Game initialized: {}ms", elapsedTime.getAsMilliseconds().count());
@@ -125,41 +127,22 @@ namespace P2
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	}
 
-	void Game::createGameWorld()
+	void Game::createGameWorldConfig()
 	{
+		// Prepare params
 		auto window = world.getResource<sf::RenderWindow>();
 		if (!window)
 		{
 			Logger->error("Window resource is invalid");
 			return;
 		}
-		
+
 		const auto windowSize = window->getView().getSize();
 
 		const sf::Vector2<int32_t> worldSize(static_cast<int32_t>(std::ceil(windowSize.x / ElementSize)), static_cast<int32_t>(std::ceil(windowSize.y / ElementSize)));
 		const int64_t entitiesCount = static_cast<int64_t>(worldSize.x * worldSize.y);
-		auto positionBatcher =
-			[worldSizeX = worldSize.x](int64_t index) -> Position
-			{
-				return Position(sf::Vector2f(float(index % worldSizeX) * ElementSize, float(index / worldSizeX) * ElementSize));
-			};
-		
-		auto colorBatcher =
-			[]([[maybe_unused]] int64_t index) -> Color
-			{
-				// TODO (mid): We should first give the player one channel of color, 
-				// and then the other channels will be unlocked as the player progresses
 
-				return Color( 
-					sf::Color::Red
-				);
-			};
-		
-		world.spawnBatch(entitiesCount, positionBatcher, colorBatcher);
-
-		Logger->info("Game world created with {} entities", world.getEntitiesCount());
-
-		// Create the world config resource, to share the world size with systems
+		// Create the world config resource, to share the world data with systems
 		auto worldConfig = world.addOrGetResource<WorldConfig>();
 		worldConfig->worldSize = worldSize;
 		worldConfig->entitiesCount = entitiesCount;
@@ -168,75 +151,6 @@ namespace P2
 		worldConfig->windowSizeRatio = sf::Vector2f(1.0f, 1.0f);
 		worldConfig->avaiableChannelsCountPerEntity = 1;
 		worldConfig->requiredExperienceToFinishCurrentLevel = entitiesCount * worldConfig->avaiableChannelsCountPerEntity * WorldConfig::MaxChannelValue;
-	}
-
-	void Game::createRenderData()
-	{
-		auto renderDataResource = world.addOrGetResource<RenderData>();
-		if (!renderDataResource)
-		{
-			Logger->critical("Couldn't create or get RenderData resource");
-			return;
-		}
-		auto& renderData = *renderDataResource;
-
-		auto drawableQuery = ecs::Query<Position, Color>(world);
-
-		constexpr int32_t verticesPerObject = 6;
-		auto& vertexBuffer = renderData.vertexBuffer;
-
-		/// Create Vertex Buffer if it's not created
-		// TODO (mid): Refactor the componentPerTypeCount, create a function in the query
-		const auto componentPerTypeCount = static_cast<uint32_t>(drawableQuery.getComponentCount() / drawableQuery.getTypeCount());
-		if (!renderData.isVertexBufferCreated)
-		{
-			const auto vertexCount = componentPerTypeCount * verticesPerObject;
-			if (!vertexBuffer.create(vertexCount))
-			{
-				Logger->error("Couldn't create vertex buffer, vertex count: {}", vertexCount);
-				return;
-			}
-			vertexBuffer.setPrimitiveType(sf::PrimitiveType::Triangles);
-			vertexBuffer.setUsage(sf::VertexBuffer::Usage::Stream);
-		}
-
-		const auto vertexCount = componentPerTypeCount * verticesPerObject;
-		std::vector<sf::Vertex> vertices;
-		vertices.reserve(vertexCount);
-
-		auto it = drawableQuery.begin();
-		while (it != drawableQuery.end())
-		{
-			auto [positionPtr, colorPtr] = *it;
-			const auto& position = *positionPtr;
-			const auto& color = *colorPtr;
-
-			std::array<sf::Vertex, verticesPerObject> singleObjectVertices;
-			singleObjectVertices[0].position = sf::Vector2f{ 0, 0 } + position.value;
-			singleObjectVertices[1].position = sf::Vector2f{ ElementSize, 0 } + position.value;
-			singleObjectVertices[2].position = sf::Vector2f{ ElementSize, ElementSize } + position.value;
-			singleObjectVertices[3].position = sf::Vector2f{ ElementSize, ElementSize } + position.value;
-			singleObjectVertices[4].position = sf::Vector2f{ 0, ElementSize } + position.value;
-			singleObjectVertices[5].position = sf::Vector2f{ 0, 0 } + position.value;
-
-			singleObjectVertices[0].color = color.value;
-			singleObjectVertices[1].color = color.value;
-			singleObjectVertices[2].color = color.value;
-			singleObjectVertices[3].color = color.value;
-			singleObjectVertices[4].color = color.value;
-			singleObjectVertices[5].color = color.value;
-
-			vertices.append_range(singleObjectVertices);
-
-			++it;
-		}
-
-		if (!vertexBuffer.update(vertices.data()))
-		{
-			Logger->error("Couldn't update vertex buffer");
-			return;
-		}
-
-		renderData.isVertexBufferCreated = true;
+		worldConfig->needsRecreateWorld = true;
 	}
 }

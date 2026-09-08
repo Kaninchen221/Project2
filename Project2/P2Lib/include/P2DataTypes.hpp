@@ -13,7 +13,7 @@
 namespace P2
 {	
 	// TODO (mid): Move this to the WorldConfig resource
-	inline static float ElementSize = 1024;
+	inline static float ElementSize = 512;
 
 	struct GameplayDataPerChannel
 	{
@@ -43,6 +43,8 @@ namespace P2
 		sf::Vector2f windowSizeRatio;
 		int32_t avaiableChannelsCountPerEntity = 0;
 		int64_t requiredExperienceToFinishCurrentLevel = 0;
+		bool needsRecreateWorld = false;
+		bool needsRecreateRenderData = false;
 	};
 
 	struct DeltaTime

@@ -39,9 +39,7 @@ namespace P2
 		Clock gameClock;
 
 		void createWindow();
-		void createGameWorld();
-		// Should be invoked after createGameWorld
-		void createRenderData();
+		void createGameWorldConfig();
 
 		bool requestedClose = false;
 

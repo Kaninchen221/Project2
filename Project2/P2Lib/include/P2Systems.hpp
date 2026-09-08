@@ -20,7 +20,7 @@ namespace P2
 	using DrawableConstQuery = ecs::ConstQuery<Position, Color>;
 	using DrawableQuery = ecs::Query<Position, Color>;
 
-	struct WindowSystems
+	namespace WindowSystems
 	{
 		struct PollEventsLabel 
 		{
@@ -33,6 +33,7 @@ namespace P2
 			);
 		};
 
+		/// TODO (mid): Rename to refresh dirty render data
 		struct BuildRenderDataLabel
 		{
 			inline static auto Logger = ConsoleLogger::CreateOrGet("BuildRenderData");
@@ -49,6 +50,17 @@ namespace P2
 
 			static void Render(
 				ecs::Resource<sf::RenderWindow> renderWindowResource,
+				ecs::Resource<RenderData> renderDataRes
+			);
+		};
+
+		struct RecreateRenderDataLabel
+		{
+			inline static auto Logger = ConsoleLogger::CreateOrGet("RecreateRenderDataLabel");
+
+			static void RecreateRenderData(
+				ecs::Resource<WorldConfig> worldConfigResource,
+				DrawableConstQuery drawableQuery,
 				ecs::Resource<RenderData> renderDataRes
 			);
 		};
@@ -81,14 +93,14 @@ namespace P2
 			static void ShowGameplayStats(const WorldConfig& worldConfig, const GameplayData& gameplayData);
 
 			static void ShowTips(GameplayWindowParamPack& gameplayWindowData);
-
+				
 			/// Debug windows
 			static void ShowDebugStatsWindow(GameplayWindowParamPack& gameplayWindowData);
-
+			// TODO (very high): Add window to show how much time needs every system
 		};
 	};
 
-	struct GameplaySystems
+	namespace GameplaySystems
 	{
 		struct ProcessClickLabel
 		{
@@ -100,6 +112,16 @@ namespace P2
 				ecs::ConstResource<WorldConfig> worldConfigResource,
 				ecs::Resource<GameplayData> gameplayDataResource,
 				ecs::Resource<RenderData> renderDataResource
+			);
+		};
+
+		struct CreateWorldLabel
+		{
+			inline static auto Logger = ConsoleLogger::CreateOrGet("CreateWorld");
+
+			static void CreateWorld(
+				ecs::Resource<WorldConfig> worldConfigResource,
+				ecs::WorldCommands worldCommands
 			);
 		};
 	};
