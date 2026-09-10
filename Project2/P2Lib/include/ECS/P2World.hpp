@@ -47,6 +47,9 @@ namespace P2::ecs
 
 		bool remove(const Entity& entity);
 
+		template<class... Components>
+		bool removeAll();
+
 		template<class Component>
 		Component* getComponent(const Entity& entity);
 
@@ -156,6 +159,24 @@ namespace P2::ecs
 		
 		auto& archetype = archetypes.emplace_back(Archetype::Create<Components...>());
 		return archetype.addBatch(firstID, count, std::forward<Components>(components)...);
+	}
+
+	template<class... Components>
+	bool World::removeAll()
+	{
+		const auto archetype = 
+			std::ranges::find_if(archetypes, [](const Archetype& archetype)
+			{
+				return archetype.typesEqual<Components...>();
+			});
+
+		if (archetype != archetypes.end())
+		{
+			archetypes.erase(archetype);
+			return true;
+		}
+
+		return false;
 	}
 
 	template<class Component>

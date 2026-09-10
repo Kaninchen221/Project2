@@ -68,6 +68,36 @@ namespace P2::ecs::tests
 		ASSERT_EQ(world.getComponentCount(), 0);
 	}
 
+	TEST_F(ECSWorldCommandsTests, RemoveAllTest)
+	{
+		const int64_t count = 100;
+		{
+			WorldCommands worldCommands{ world };
+
+			worldCommands.spawnBatch(count, Position{}, Sprite{});
+			worldCommands.spawnBatch(count, Position{});
+		}
+
+		world.executeCommands();
+		world.clearCommands();
+
+		const int64_t expectedEntitiesCountAfterSpawn = count * 2;
+		ASSERT_EQ(world.getEntitiesCount(), expectedEntitiesCountAfterSpawn);
+
+		{
+			WorldCommands worldCommands{ world };
+			const bool removed = worldCommands.removeAll<Position, Sprite>();
+			ASSERT_TRUE(removed);
+		}
+
+		world.executeCommands();
+		world.clearCommands();
+
+		/// After removing Entities<Position, Sprite> there should be only Entities<Position> left
+		const int64_t expectedEntitiesCountAfterRemoveAll = count;
+		ASSERT_EQ(world.getEntitiesCount(), expectedEntitiesCountAfterRemoveAll);
+	}
+
 	TEST_F(ECSWorldCommandsTests, AddResourceTrivialTypeTest)
 	{
 		testAddResource<TrivialClass>();

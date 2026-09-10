@@ -206,6 +206,29 @@ namespace P2::ecs::tests
 		ASSERT_FALSE(world.remove(entity));
 	}
 
+	TEST_F(ECSWorldTests, RemoveAllTest)
+	{
+		const int64_t count = 100;
+		world.spawnBatch(count, Position{}, Sprite{});
+		world.spawnBatch(count, Position{});
+
+		const int64_t expectedEntitiesCountAfterSpawn = count * 2;
+		ASSERT_EQ(world.getEntitiesCount(), expectedEntitiesCountAfterSpawn);
+
+		const bool removed = world.removeAll<Position, Sprite>();
+		ASSERT_TRUE(removed);
+
+		/// After removing Entities<Position, Sprite> there should be only Entities<Position> left
+		const int64_t expectedEntitiesCountAfterRemoveAll = count;
+		ASSERT_EQ(world.getEntitiesCount(), expectedEntitiesCountAfterRemoveAll);
+	}
+
+	TEST_F(ECSWorldTests, RemoveAllFailTest)
+	{
+		const bool removed = world.removeAll<Position, Sprite>();
+		ASSERT_FALSE(removed);
+	}
+
 	TEST_F(ECSWorldTests, TrySpawnEntityWithoutComponentsTest)
 	{
 		const auto entity = world.spawn();
