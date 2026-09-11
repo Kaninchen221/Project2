@@ -338,7 +338,7 @@ namespace P2
 		const float completePercentage = std::roundf(static_cast<float>(gameplayData.totalExperience) / static_cast<float>(worldConfig.requiredExperienceToFinishCurrentLevel) * 100.f);
 		ImGui::Text("Complete percentage: %.0f%%", completePercentage);
 
-		if (completePercentage >= 100.f)
+		if (ElementSize != 1.f /* TODO(mid): Refactor to "IsFinalLevel"*/ && completePercentage >= 100.f)
 		{
 			if (ImGui::Button("Next Level"))
 			{
