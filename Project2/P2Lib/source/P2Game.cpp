@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "P2Systems.hpp"
+#include "P2GameplayUtils.hpp"
 
 #include <imgui-SFML.h>
 #include <imgui.h>
@@ -139,18 +140,15 @@ namespace P2
 
 		const auto windowSize = window->getView().getSize();
 
-		const sf::Vector2<int32_t> worldSize(static_cast<int32_t>(std::ceil(windowSize.x / ElementSize)), static_cast<int32_t>(std::ceil(windowSize.y / ElementSize)));
-		const int64_t entitiesCount = static_cast<int64_t>(worldSize.x * worldSize.y);
-
 		// Create the world config resource, to share the world data with systems
 		auto worldConfig = world.addOrGetResource<WorldConfig>();
-		worldConfig->worldSize = worldSize;
-		worldConfig->entitiesCount = entitiesCount;
+		worldConfig->worldSize = GetWorldSizeFromWindowSize(windowSize, ElementSize);
+		worldConfig->entitiesCount = GetEntitiesCountFromWorldSize(worldConfig->worldSize);
 		worldConfig->originalWindowSizePixels = sf::Vector2f(static_cast<float>(window->getSize().x), static_cast<float>(window->getSize().y));
 		worldConfig->currentWindowSizePixels = worldConfig->originalWindowSizePixels;
 		worldConfig->windowSizeRatio = sf::Vector2f(1.0f, 1.0f);
 		worldConfig->avaiableChannelsCountPerEntity = 1;
-		worldConfig->requiredExperienceToFinishCurrentLevel = entitiesCount * worldConfig->avaiableChannelsCountPerEntity * WorldConfig::MaxChannelValue;
+		worldConfig->requiredExperienceToFinishCurrentLevel = GetRequiredExperienceToFinishCurrentLevel(worldConfig->entitiesCount, worldConfig->avaiableChannelsCountPerEntity);
 		worldConfig->needsRecreateWorld = true;
 	}
 }

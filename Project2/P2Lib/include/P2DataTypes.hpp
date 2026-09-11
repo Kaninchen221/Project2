@@ -13,7 +13,7 @@
 namespace P2
 {	
 	// TODO (mid): Move this to the WorldConfig resource
-	inline static float ElementSize = 512;
+	inline static float ElementSize = 2048;
 
 	struct GameplayDataPerChannel
 	{
@@ -41,7 +41,9 @@ namespace P2
 		sf::Vector2f originalWindowSizePixels;
 		sf::Vector2f currentWindowSizePixels;
 		sf::Vector2f windowSizeRatio;
+		// TODO (mid): Count which level is the current level
 		int32_t avaiableChannelsCountPerEntity = 0;
+		// TODO (high): it's flipping the sign after X levels
 		int64_t requiredExperienceToFinishCurrentLevel = 0;
 		bool needsRecreateWorld = false;
 		bool needsRecreateRenderData = false;
@@ -81,7 +83,7 @@ namespace P2
 	{
 		const DeltaTime& deltaTime;
 		GameplayData& gameplayData;
-		const WorldConfig& worldConfig;
+		WorldConfig& worldConfig; // TODO (mid): it's a future candidate to be const
 	};
 
 	struct GameplayWindowData

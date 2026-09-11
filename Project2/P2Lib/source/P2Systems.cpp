@@ -5,6 +5,7 @@
 #include <imgui-SFML.h>
 
 #include "P2ImGuiUtils.hpp"
+#include "P2GameplayUtils.hpp"
 
 using namespace std::chrono_literals;
 
@@ -146,20 +147,20 @@ namespace P2
 		const auto componentPerTypeCount = static_cast<uint32_t>(drawableQuery.getComponentCount() / drawableQuery.getTypeCount());
 		
 		// TODO (mid): Remove this check and 'isVertexBufferCreated' var
-		if (!renderData.isVertexBufferCreated)
-		{
-			vertexBuffer = sf::VertexBuffer{}; // To make sure that the underlying buffer was properly released
-			const auto vertexCount = componentPerTypeCount * verticesPerObject;
-			if (!vertexBuffer.create(vertexCount))
-			{
-				Logger->error("Couldn't create vertex buffer, vertex count: {}", vertexCount);
-				return;
-			}
-			vertexBuffer.setPrimitiveType(sf::PrimitiveType::Triangles);
-			vertexBuffer.setUsage(sf::VertexBuffer::Usage::Stream);
-		}
-
+		//if (!renderData.isVertexBufferCreated)
+		//{
+		vertexBuffer = sf::VertexBuffer{}; // To make sure that the underlying buffer was properly released
 		const auto vertexCount = componentPerTypeCount * verticesPerObject;
+		if (!vertexBuffer.create(vertexCount))
+		{
+			Logger->error("Couldn't create vertex buffer, vertex count: {}", vertexCount);
+			return;
+		}
+		vertexBuffer.setPrimitiveType(sf::PrimitiveType::Triangles);
+		vertexBuffer.setUsage(sf::VertexBuffer::Usage::Stream);
+		//}
+
+		//const auto vertexCount = componentPerTypeCount * verticesPerObject;
 		std::vector<sf::Vertex> vertices;
 		vertices.reserve(vertexCount);
 
@@ -218,7 +219,7 @@ namespace P2
 		ecs::Resource<GameplayWindowData> gameplayWindowDataResource,
 		ecs::ConstResource<DeltaTime> deltaTimeResource,
 		ecs::Resource<GameplayData> gameplayDataResource,
-		ecs::ConstResource<WorldConfig> worldConfigResource
+		ecs::Resource<WorldConfig> worldConfigResource
 	)
 	{
 		auto& gameplayWindowData = *gameplayWindowDataResource;
@@ -252,6 +253,11 @@ namespace P2
 				if (ImGui::MenuItem("Stats")) 
 				{
 					gameplayWindowData.currentWindow = GameplayWindowLabel::ShowDebugStatsWindow;
+				}
+
+				if (ImGui::MenuItem("Cheats"))
+				{
+					gameplayWindowData.currentWindow = GameplayWindowLabel::ShowDebugCheatsWindow;
 				}
 
 				ImGui::EndMenu();
@@ -319,7 +325,7 @@ namespace P2
 		ImGui::PopID();
 	}
 
-	void ImGuiSystems::GameplayWindowLabel::ShowGameplayStats(const WorldConfig& worldConfig, const GameplayData& gameplayData)
+	void ImGuiSystems::GameplayWindowLabel::ShowGameplayStats(WorldConfig& worldConfig, const GameplayData& gameplayData)
 	{
 		ImGui::NewLine(); // Horizontal spacing
 		SubWindowTitle("GameplayStats");
@@ -336,7 +342,9 @@ namespace P2
 		{
 			if (ImGui::Button("Next Level"))
 			{
-				// TODO (high): Request next level
+				// Request next level
+				const auto newWorldConfig = GetNextLevelWorldConfig(worldConfig);
+				worldConfig = newWorldConfig;
 			}
 		}
 	}
@@ -371,6 +379,14 @@ namespace P2
 		const float deltaTimeAsMS = deltaTime.value.asSeconds() * 1000.f;
 		ImGui::Text("Delta time: %.3f ms", deltaTimeAsMS);
 		ImGui::Text("FPS: %.3f", 1000.f /*1 second as ms*/ / deltaTimeAsMS);
+	}
+
+	void ImGuiSystems::GameplayWindowLabel::ShowDebugCheatsWindow(GameplayWindowParamPack& gameplayWindowData)
+	{
+		if (ImGui::Button("Next Level"))
+		{
+			gameplayWindowData.worldConfig = GetNextLevelWorldConfig(gameplayWindowData.worldConfig);
+		}
 	}
 
 	void GameplaySystems::ProcessClickLabel::ProcessClick(
@@ -453,13 +469,18 @@ namespace P2
 		ecs::WorldCommands worldCommands
 	)
 	{
-		// TODO (high): Erase all drawable entities first
-
 		auto& worldConfig = *worldConfigResource;
 		if (!worldConfig.needsRecreateWorld)
 		{
 			return;
 		}
+
+		Logger->info("Recreate World");
+
+		// TODO (high): We should create next "level" in the background while playing the current level
+
+		const auto removeAllDrawables = worldCommands.removeAll<Position, Color>();
+		Logger->info("Removed all drawable entities: {}", removeAllDrawables);
 
 		auto positionBatcher =
 			[worldSizeX = worldConfig.worldSize.x](int64_t index) -> Position
@@ -479,6 +500,7 @@ namespace P2
 			};
 
 		worldCommands.spawnBatch(worldConfig.entitiesCount, positionBatcher, colorBatcher);
+		Logger->info("Created world with {} entities", worldConfig.entitiesCount);
 
 		worldConfig.needsRecreateWorld = false;
 		worldConfig.needsRecreateRenderData = true;

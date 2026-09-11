@@ -84,18 +84,20 @@ namespace P2
 				ecs::Resource<GameplayWindowData> gameplayWindowDataResource,
 				ecs::ConstResource<DeltaTime> deltaTimeResource,
 				ecs::Resource<GameplayData> gameplayDataResource,
-				ecs::ConstResource<WorldConfig> worldConfigResource
+				ecs::Resource<WorldConfig> worldConfigResource
 			);
 
 			/// Gameplay windows
 			static void ShowUpgradeWindow(GameplayWindowParamPack& gameplayWindowData);
 			static void UpgradeWindowPerChannel(GameplayDataPerChannel& gameplayDataPerChannel);
-			static void ShowGameplayStats(const WorldConfig& worldConfig, const GameplayData& gameplayData);
+			static void ShowGameplayStats(WorldConfig& worldConfig, const GameplayData& gameplayData);
 
 			static void ShowTips(GameplayWindowParamPack& gameplayWindowData);
 				
 			/// Debug windows
 			static void ShowDebugStatsWindow(GameplayWindowParamPack& gameplayWindowData);
+			static void ShowDebugCheatsWindow(GameplayWindowParamPack& gameplayWindowData);
+
 			// TODO (very high): Add window to show how much time needs every system
 		};
 	};
