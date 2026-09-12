@@ -309,11 +309,6 @@ namespace P2::ecs
 #					if P2_TIME_TRACE
 						node.executeTime = clock.getElapsedTime();
 						Logger->trace("Executing node: {} took: {}us", node.typeInfo->name(), node.executeTime.getAsMicroseconds().count());
-
-						if (node.executeTime.getAsMilliseconds() >= 1ms)
-						{
-							Logger->trace("Executing node: {} took: {}us", node.typeInfo->name(), node.executeTime.getAsMicroseconds().count());
-						}
 #					endif
 					}
 				}

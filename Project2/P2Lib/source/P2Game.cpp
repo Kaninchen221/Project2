@@ -84,7 +84,6 @@ namespace P2
 
 	void Game::loopStep(const Time&)
 	{
-		/// TODO (mid): Skip the "runOnce" if the delta time is too high
 		// Update the DeltaTime
 		auto timeResource = world.addOrGetResource<DeltaTime>();
 		if (!timeResource)
@@ -92,8 +91,13 @@ namespace P2
 			Logger->critical("Couldn't create or get DeltaTime resource");
 			return;
 		}
+
 		timeResource->value = deltaClock.restart();
-		//Logger->info("Delta time: {}ms", timeResource->value.asMilliseconds());
+		if (timeResource->value.asMilliseconds() > 1)
+		{
+			Logger->warn("Big delta time: {}us, skip it", timeResource->value.asMicroseconds());
+			return;
+		}
 
 		// Run the schedule
 		schedule.runOnce(world);
