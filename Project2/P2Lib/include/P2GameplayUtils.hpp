@@ -53,4 +53,9 @@ namespace P2
 
 		return newWorldConfig;
 	}
+
+	inline static bool IsFinalLevel(float elementSize)
+	{
+		return std::floor(elementSize) == 1.f;
+	}
 }

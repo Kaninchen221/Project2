@@ -346,7 +346,7 @@ namespace P2
 		const float completePercentage = std::roundf(static_cast<float>(gameplayData.totalExperience) / static_cast<float>(worldConfig.requiredExperienceToFinishCurrentLevel) * 100.f);
 		ImGui::Text("Complete percentage: %.0f%%", completePercentage);
 
-		if (worldConfig.elementSize != 1.f /* TODO(mid): Refactor to "IsFinalLevel"*/ && completePercentage >= 100.f)
+		if (!IsFinalLevel(worldConfig.elementSize) && completePercentage >= 100.f)
 		{
 			if (ImGui::Button("Next Level"))
 			{
@@ -392,7 +392,7 @@ namespace P2
 	void ImGuiSystems::GameplayWindowLabel::ShowDebugCheatsWindow(GameplayWindowParamPack& gameplayWindowData)
 	{
 		auto& worldConfig = gameplayWindowData.worldConfig;
-		if (worldConfig.elementSize != 1.f /* TODO(mid): Refactor to "IsFinalLevel"*/ && ImGui::Button("Next Level"))
+		if (!IsFinalLevel(worldConfig.elementSize) && ImGui::Button("Next Level"))
 		{
 			gameplayWindowData.worldConfig = GetNextLevelWorldConfig(gameplayWindowData.worldConfig);
 		}
