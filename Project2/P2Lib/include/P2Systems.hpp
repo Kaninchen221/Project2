@@ -98,7 +98,7 @@ namespace P2
 			static void ShowDebugStatsWindow(GameplayWindowParamPack& gameplayWindowData);
 			static void ShowDebugCheatsWindow(GameplayWindowParamPack& gameplayWindowData);
 
-			// TODO (very high): Add window to show how much time needs every system
+			// TODO (very low): Add window to show how much time needs every system
 		};
 	};
 
