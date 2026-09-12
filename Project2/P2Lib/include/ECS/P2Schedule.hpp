@@ -102,7 +102,7 @@ namespace P2::ecs
 
 	class P2_API Schedule
 	{
-		inline static auto Logger = ConsoleLogger::CreateOrGet("P2::ecs::Schedule");
+		inline static auto Logger = ConsoleLogger::CreateOrGet("P2::ecs::Schedule", spdlog::level::info);
 
 	public:
 
