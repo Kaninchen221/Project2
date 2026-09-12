@@ -35,7 +35,7 @@ namespace P2
 		sf::Vector2f originalWindowSizePixels;
 		sf::Vector2f currentWindowSizePixels;
 		sf::Vector2f windowSizeRatio;
-		// TODO (mid): Count which level is the current level
+		int32_t currentLevel = 1;
 		int32_t avaiableChannelsCountPerEntity = 0;
 		// TODO (high): it's flipping the sign after X levels
 		int64_t requiredExperienceToFinishCurrentLevel = 0;

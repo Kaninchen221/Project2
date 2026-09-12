@@ -44,6 +44,7 @@ namespace P2
 			.originalWindowSizePixels = worldConfig.originalWindowSizePixels,
 			.currentWindowSizePixels = worldConfig.currentWindowSizePixels,
 			.windowSizeRatio = worldConfig.windowSizeRatio,
+			.currentLevel = worldConfig.currentLevel + 1,
 			.avaiableChannelsCountPerEntity = availableChannelsCountPerEntity,
 			.requiredExperienceToFinishCurrentLevel = requiredExperienceToFinishCurrentLevel,
 			.needsRecreateWorld = true,

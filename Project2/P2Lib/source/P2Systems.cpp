@@ -336,6 +336,8 @@ namespace P2
 		ImGui::NewLine(); // Horizontal spacing
 		SubWindowTitle("GameplayStats");
 
+		ImGui::Text("Current Level: %d", worldConfig.currentLevel);
+		ImGui::Text("Element Size: %.0f", worldConfig.elementSize);
 		ImGui::Text("Available Channels: %d", worldConfig.avaiableChannelsCountPerEntity);
 		ImGui::SetItemTooltip("Every quad has channels that define its color, at the start only the red channel is available");
 		ImGui::Text("Required Experience: %d", worldConfig.requiredExperienceToFinishCurrentLevel);
@@ -389,7 +391,8 @@ namespace P2
 
 	void ImGuiSystems::GameplayWindowLabel::ShowDebugCheatsWindow(GameplayWindowParamPack& gameplayWindowData)
 	{
-		if (ImGui::Button("Next Level"))
+		auto& worldConfig = gameplayWindowData.worldConfig;
+		if (worldConfig.elementSize != 1.f /* TODO(mid): Refactor to "IsFinalLevel"*/ && ImGui::Button("Next Level"))
 		{
 			gameplayWindowData.worldConfig = GetNextLevelWorldConfig(gameplayWindowData.worldConfig);
 		}
