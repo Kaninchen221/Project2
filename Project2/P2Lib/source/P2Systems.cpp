@@ -58,7 +58,7 @@ namespace P2
 		}
 	}
 
-	void WindowSystems::BuildRenderDataLabel::BuildRenderData(
+	void WindowSystems::RefreshDirtyRenderDataLabel::RefreshDirtyRenderData(
 		ecs::ConstQuery<Position, Color> drawableQuery,
 		ecs::Resource<RenderData> renderDataRes,
 		ecs::ConstResource<WorldConfig> worldConfigRes

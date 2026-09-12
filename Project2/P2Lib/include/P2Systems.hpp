@@ -33,12 +33,11 @@ namespace P2
 			);
 		};
 
-		/// TODO (mid): Rename to refresh dirty render data
-		struct BuildRenderDataLabel
+		struct RefreshDirtyRenderDataLabel
 		{
-			inline static auto Logger = ConsoleLogger::CreateOrGet("BuildRenderData");
+			inline static auto Logger = ConsoleLogger::CreateOrGet("RefreshDirtyRenderData");
 
-			static void BuildRenderData(
+			static void RefreshDirtyRenderData(
 				DrawableConstQuery drawableQuery,
 				ecs::Resource<RenderData> renderDataRes,
 				ecs::ConstResource<WorldConfig> worldConfigRes

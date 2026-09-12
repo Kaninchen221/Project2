@@ -21,10 +21,10 @@ namespace P2
 
 		schedule.addSystem(GameplaySystems::CreateWorldLabel{}, GameplaySystems::CreateWorldLabel::CreateWorld);
 
-		schedule.addSystem(WindowSystems::RecreateRenderDataLabel{}, WindowSystems::RecreateRenderDataLabel::RecreateRenderData, ecs::After(GameplaySystems::CreateWorldLabel{}), ecs::Before(WindowSystems::BuildRenderDataLabel{}));
+		schedule.addSystem(WindowSystems::RecreateRenderDataLabel{}, WindowSystems::RecreateRenderDataLabel::RecreateRenderData, ecs::After(GameplaySystems::CreateWorldLabel{}), ecs::Before(WindowSystems::RefreshDirtyRenderDataLabel{}));
 
 		schedule.addSystem(WindowSystems::PollEventsLabel{}, WindowSystems::PollEventsLabel::PollEvents, ecs::MainThread{}, ecs::Before(WindowSystems::RenderLabel{}));
-		schedule.addSystem(WindowSystems::BuildRenderDataLabel{}, WindowSystems::BuildRenderDataLabel::BuildRenderData, ecs::Before(WindowSystems::RenderLabel{}));
+		schedule.addSystem(WindowSystems::RefreshDirtyRenderDataLabel{}, WindowSystems::RefreshDirtyRenderDataLabel::RefreshDirtyRenderData, ecs::Before(WindowSystems::RenderLabel{}));
 		schedule.addSystem(WindowSystems::RenderLabel{}, WindowSystems::RenderLabel::Render, ecs::MainThread{});
 
 		schedule.addSystem(ImGuiSystems::ImGuiUpdateLabel{}, ImGuiSystems::ImGuiUpdateLabel::ImGuiUpdate, ecs::MainThread{}, ecs::Before(WindowSystems::RenderLabel{}));

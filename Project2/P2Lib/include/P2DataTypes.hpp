@@ -77,7 +77,7 @@ namespace P2
 	{
 		const DeltaTime& deltaTime;
 		GameplayData& gameplayData;
-		WorldConfig& worldConfig; // TODO (mid): it's a future candidate to be const
+		WorldConfig& worldConfig; // TODO (low): it's a future candidate to be const
 	};
 
 	struct GameplayWindowData
