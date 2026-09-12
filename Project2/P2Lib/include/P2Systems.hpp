@@ -40,7 +40,8 @@ namespace P2
 
 			static void BuildRenderData(
 				DrawableConstQuery drawableQuery,
-				ecs::Resource<RenderData> renderDataRes
+				ecs::Resource<RenderData> renderDataRes,
+				ecs::ConstResource<WorldConfig> worldConfigRes
 			);
 		};
 

@@ -27,9 +27,9 @@ namespace P2
 
 	inline static WorldConfig GetNextLevelWorldConfig(const WorldConfig& worldConfig)
 	{
-		ElementSize = std::clamp(ElementSize / 2.f, 1.f, std::numeric_limits<float>::max());
+		const float elementSize = std::clamp(worldConfig.elementSize / 2.f, 1.f, std::numeric_limits<float>::max());
 
-		const auto worldSize = GetWorldSizeFromWindowSize(worldConfig.originalWindowSizePixels, ElementSize);
+		const auto worldSize = GetWorldSizeFromWindowSize(worldConfig.originalWindowSizePixels, elementSize);
 		const int64_t entitiesCount = GetEntitiesCountFromWorldSize(worldSize);
 		//const int32_t availableChannelsCountPerEntity = std::clamp(worldConfig.avaiableChannelsCountPerEntity + 1, 1, 3); // TODO (mid): Handle more channels
 		const int32_t availableChannelsCountPerEntity = 1;
@@ -38,6 +38,7 @@ namespace P2
 
 		const WorldConfig newWorldConfig
 		{
+			.elementSize = elementSize,
 			.worldSize = worldSize,
 			.entitiesCount = entitiesCount,
 			.originalWindowSizePixels = worldConfig.originalWindowSizePixels,

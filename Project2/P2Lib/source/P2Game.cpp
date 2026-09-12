@@ -142,7 +142,7 @@ namespace P2
 
 		// Create the world config resource, to share the world data with systems
 		auto worldConfig = world.addOrGetResource<WorldConfig>();
-		worldConfig->worldSize = GetWorldSizeFromWindowSize(windowSize, ElementSize);
+		worldConfig->worldSize = GetWorldSizeFromWindowSize(windowSize, worldConfig->elementSize);
 		worldConfig->entitiesCount = GetEntitiesCountFromWorldSize(worldConfig->worldSize);
 		worldConfig->originalWindowSizePixels = sf::Vector2f(static_cast<float>(window->getSize().x), static_cast<float>(window->getSize().y));
 		worldConfig->currentWindowSizePixels = worldConfig->originalWindowSizePixels;

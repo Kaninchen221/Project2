@@ -60,7 +60,8 @@ namespace P2
 
 	void WindowSystems::BuildRenderDataLabel::BuildRenderData(
 		ecs::ConstQuery<Position, Color> drawableQuery,
-		ecs::Resource<RenderData> renderDataRes
+		ecs::Resource<RenderData> renderDataRes,
+		ecs::ConstResource<WorldConfig> worldConfigRes
 	)
 	{
 		auto& renderData = *renderDataRes;
@@ -69,6 +70,9 @@ namespace P2
 			Logger->critical("Vertex buffer is not created");
 			return;
 		}
+
+		const auto& worldConfig = *worldConfigRes;
+		const auto& elementSize = worldConfig.elementSize;
 
 		for (const auto entityIndex : renderData.dirtyEntityIndices)
 		{
@@ -79,10 +83,10 @@ namespace P2
 			const std::array<sf::Vertex, RenderData::VerticesPerObject> vertices =
 			{
 				sf::Vertex(posPtr->value + sf::Vector2f(0, 0),						colorPtr->value),
-				sf::Vertex(posPtr->value + sf::Vector2f(ElementSize, 0),			colorPtr->value),
-				sf::Vertex(posPtr->value + sf::Vector2f(ElementSize, ElementSize),	colorPtr->value),
-				sf::Vertex(posPtr->value + sf::Vector2f(ElementSize, ElementSize),	colorPtr->value),
-				sf::Vertex(posPtr->value + sf::Vector2f(0, ElementSize),			colorPtr->value),
+				sf::Vertex(posPtr->value + sf::Vector2f(elementSize, 0),			colorPtr->value),
+				sf::Vertex(posPtr->value + sf::Vector2f(elementSize, elementSize),	colorPtr->value),
+				sf::Vertex(posPtr->value + sf::Vector2f(elementSize, elementSize),	colorPtr->value),
+				sf::Vertex(posPtr->value + sf::Vector2f(0, elementSize),			colorPtr->value),
 				sf::Vertex(posPtr->value + sf::Vector2f(0, 0),						colorPtr->value)
 			};
 
@@ -164,6 +168,8 @@ namespace P2
 		std::vector<sf::Vertex> vertices;
 		vertices.reserve(vertexCount);
 
+		const auto& elementSize = worldConfig.elementSize;
+
 		auto it = drawableQuery.begin();
 		while (it != drawableQuery.end())
 		{
@@ -173,10 +179,10 @@ namespace P2
 
 			std::array<sf::Vertex, verticesPerObject> singleObjectVertices;
 			singleObjectVertices[0].position = sf::Vector2f{ 0, 0 } + position.value;
-			singleObjectVertices[1].position = sf::Vector2f{ ElementSize, 0 } + position.value;
-			singleObjectVertices[2].position = sf::Vector2f{ ElementSize, ElementSize } + position.value;
-			singleObjectVertices[3].position = sf::Vector2f{ ElementSize, ElementSize } + position.value;
-			singleObjectVertices[4].position = sf::Vector2f{ 0, ElementSize } + position.value;
+			singleObjectVertices[1].position = sf::Vector2f{ elementSize, 0 } + position.value;
+			singleObjectVertices[2].position = sf::Vector2f{ elementSize, elementSize } + position.value;
+			singleObjectVertices[3].position = sf::Vector2f{ elementSize, elementSize } + position.value;
+			singleObjectVertices[4].position = sf::Vector2f{ 0, elementSize } + position.value;
 			singleObjectVertices[5].position = sf::Vector2f{ 0, 0 } + position.value;
 
 			singleObjectVertices[0].color = color.value;
@@ -338,7 +344,7 @@ namespace P2
 		const float completePercentage = std::roundf(static_cast<float>(gameplayData.totalExperience) / static_cast<float>(worldConfig.requiredExperienceToFinishCurrentLevel) * 100.f);
 		ImGui::Text("Complete percentage: %.0f%%", completePercentage);
 
-		if (ElementSize != 1.f /* TODO(mid): Refactor to "IsFinalLevel"*/ && completePercentage >= 100.f)
+		if (worldConfig.elementSize != 1.f /* TODO(mid): Refactor to "IsFinalLevel"*/ && completePercentage >= 100.f)
 		{
 			if (ImGui::Button("Next Level"))
 			{
@@ -412,8 +418,8 @@ namespace P2
 
 				const auto clickedAt = 
 					sf::Vector2i(
-						static_cast<int>(mouseEvent->position.x / (ElementSize * worldConfig.windowSizeRatio.x)),
-						static_cast<int>(mouseEvent->position.y / (ElementSize * worldConfig.windowSizeRatio.y))
+						static_cast<int>(mouseEvent->position.x / (worldConfig.elementSize * worldConfig.windowSizeRatio.x)),
+						static_cast<int>(mouseEvent->position.y / (worldConfig.elementSize * worldConfig.windowSizeRatio.y))
 					);
 
 				Logger->trace("Mouse clicked at element: {}, {}", clickedAt.x, clickedAt.y);
@@ -483,9 +489,10 @@ namespace P2
 		Logger->info("Removed all drawable entities: {}", removeAllDrawables);
 
 		auto positionBatcher =
-			[worldSizeX = worldConfig.worldSize.x](int64_t index) -> Position
+			[worldSizeX = worldConfig.worldSize.x, elementSize = worldConfig.elementSize]
+			(int64_t index) -> Position
 			{
-				return Position(sf::Vector2f(float(index % worldSizeX) * ElementSize, float(index / worldSizeX) * ElementSize));
+				return Position(sf::Vector2f(float(index % worldSizeX) * elementSize, float(index / worldSizeX) * elementSize));
 			};
 
 		auto colorBatcher =

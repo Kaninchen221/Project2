@@ -7,10 +7,7 @@
 #include <SFML/Graphics.hpp>
 
 namespace P2
-{	
-	// TODO (high): Move this to the WorldConfig resource
-	inline static float ElementSize = 2048;
-
+{
 	struct GameplayDataPerChannel
 	{
 		std::string name;
@@ -31,6 +28,7 @@ namespace P2
 	{
 		constexpr static int32_t MaxChannelValue = 255;
 
+		float elementSize = 2048;
 		// Count of entities in the world, in X and Y dimensions
 		sf::Vector2<int32_t> worldSize;
 		int64_t entitiesCount = 0;
