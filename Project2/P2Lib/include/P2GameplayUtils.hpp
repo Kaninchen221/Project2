@@ -10,8 +10,8 @@ namespace P2
 	{
 		return 
 			sf::Vector2<int32_t>(
-				static_cast<int32_t>(std::ceil(windowSize.x / elementSize)),
-				static_cast<int32_t>(std::ceil(windowSize.y / elementSize))
+				static_cast<int32_t>(std::round(windowSize.x / elementSize)),
+				static_cast<int32_t>(std::round(windowSize.y / elementSize))
 			);
 	}
 

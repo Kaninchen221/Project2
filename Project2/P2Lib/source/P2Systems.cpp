@@ -521,9 +521,6 @@ namespace P2
 		auto colorBatcher =
 			[color = color]([[maybe_unused]] int64_t index) -> Color
 			{
-				// TODO (mid): We should first give the player one channel of color, 
-				// and then the other channels will be unlocked as the player progresses
-
 				return color;
 			};
 
