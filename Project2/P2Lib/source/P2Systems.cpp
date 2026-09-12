@@ -498,15 +498,33 @@ namespace P2
 				return Position(sf::Vector2f(float(index % worldSizeX) * elementSize, float(index / worldSizeX) * elementSize));
 			};
 
+		const auto color = 
+			[&worldConfig = worldConfig]()
+			{
+				if (worldConfig.avaiableChannelsCountPerEntity == 1)
+				{
+					return Color(sf::Color::Red);
+				}
+				else if (worldConfig.avaiableChannelsCountPerEntity == 2)
+				{
+					return Color(sf::Color::Red + sf::Color::Green);
+				}
+				else if (worldConfig.avaiableChannelsCountPerEntity == 3)
+				{
+					return Color(sf::Color::White);
+				}
+
+				Logger->error("We handle only 3 channels");
+				return Color(sf::Color::White);
+			}();
+
 		auto colorBatcher =
-			[]([[maybe_unused]] int64_t index) -> Color
+			[color = color]([[maybe_unused]] int64_t index) -> Color
 			{
 				// TODO (mid): We should first give the player one channel of color, 
 				// and then the other channels will be unlocked as the player progresses
 
-				return Color(
-					sf::Color::Red
-				);
+				return color;
 			};
 
 		worldCommands.spawnBatch(worldConfig.entitiesCount, positionBatcher, colorBatcher);

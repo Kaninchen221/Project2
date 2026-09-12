@@ -31,8 +31,7 @@ namespace P2
 
 		const auto worldSize = GetWorldSizeFromWindowSize(worldConfig.originalWindowSizePixels, elementSize);
 		const int64_t entitiesCount = GetEntitiesCountFromWorldSize(worldSize);
-		//const int32_t availableChannelsCountPerEntity = std::clamp(worldConfig.avaiableChannelsCountPerEntity + 1, 1, 3); // TODO (mid): Handle more channels
-		const int32_t availableChannelsCountPerEntity = 1;
+		const int32_t availableChannelsCountPerEntity = std::clamp(worldConfig.avaiableChannelsCountPerEntity + 1, 1, 3);
 		const auto requiredExperienceToFinishCurrentLevel = 
 			GetRequiredExperienceToFinishCurrentLevel(entitiesCount, availableChannelsCountPerEntity) + worldConfig.requiredExperienceToFinishCurrentLevel;
 
