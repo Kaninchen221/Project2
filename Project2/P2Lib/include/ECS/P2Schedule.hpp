@@ -168,6 +168,8 @@ namespace P2::ecs
 
 		static bool ShouldSkipNode(const GraphNode& node, const World& world) noexcept;
 
+		static void ExecuteNode(GraphNode& node, World& world) noexcept;
+
 		template<class Dependency>
 		constexpr static void ResolveDeps(SystemInfo& systemInfo, const Dependency& dependency)
 		{

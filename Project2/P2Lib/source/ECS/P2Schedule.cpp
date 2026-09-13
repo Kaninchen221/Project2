@@ -251,27 +251,7 @@ namespace P2::ecs
 					[&node = node, getWorld = std::bind(&Schedule::getWorld, this)]()
 					{
 						auto& world = std::invoke(getWorld);
-
-						if (ShouldSkipNode(node, world))
-						{
-							Logger->warn("Skip node: {}", node.typeInfo->name());
-							return;
-						}
-
-#					if P2_TIME_TRACE
-						Clock clock;
-#					endif
-
-						auto& systemAdapter = node.systemAdapter;
-						if (systemAdapter)
-						{
-							std::invoke(systemAdapter, world);
-						}
-
-#					if P2_TIME_TRACE
-						node.executeTime = clock.getElapsedTime();
-						Logger->trace("Executing node: {} took: {}us", node.typeInfo->name(), node.executeTime.getAsMicroseconds().count());
-#					endif
+						ExecuteNode(node, world);
 					}
 				);
 			}
@@ -292,24 +272,9 @@ namespace P2::ecs
 				/// Run main thread nodes
 				for (auto& node : layer.nodes)
 				{
-					if (ShouldSkipNode(node, world))
-					{
-						Logger->warn("Skip node: {}", node.typeInfo->name());
-						continue;
-					}
-
 					if (node.mainThread)
 					{
-#					if P2_TIME_TRACE
-						Clock clock;
-#					endif
-
-						std::invoke(node.systemAdapter, world);
-
-#					if P2_TIME_TRACE
-						node.executeTime = clock.getElapsedTime();
-						Logger->trace("Executing node: {} took: {}us", node.typeInfo->name(), node.executeTime.getAsMicroseconds().count());
-#					endif
+						ExecuteNode(node, world);
 					}
 				}
 
@@ -334,5 +299,24 @@ namespace P2::ecs
 		}
 
 		return false;
+	}
+
+	void Schedule::ExecuteNode(GraphNode& node, World& world) noexcept
+	{
+		if (ShouldSkipNode(node, world))
+		{
+			Logger->warn("Skip node: {}", node.typeInfo->name());
+			return;
+		}
+#	if P2_TIME_TRACE
+		Clock clock;
+#	endif
+
+		std::invoke(node.systemAdapter, world);
+
+#	if P2_TIME_TRACE
+		node.executeTime = clock.getElapsedTime();
+		Logger->trace("Executing node: {} took: {}us", node.typeInfo->name(), node.executeTime.getAsMicroseconds().count());
+#	endif
 	}
 }
