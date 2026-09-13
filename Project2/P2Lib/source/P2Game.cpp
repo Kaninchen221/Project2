@@ -119,6 +119,7 @@ namespace P2
 
 		auto videoMode = sf::VideoMode::getDesktopMode();
 		window->create(videoMode, "Project2", sf::State::Windowed);
+		window->setVerticalSyncEnabled(false);
 
 		if (!ImGui::SFML::Init(*window))
 		{
