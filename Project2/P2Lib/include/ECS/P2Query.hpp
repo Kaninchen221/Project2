@@ -51,10 +51,8 @@ namespace P2::ecs
 	template<class IsConstType, class... Components>
 	bool QueryIteratorImpl<IsConstType, Components...>::operator==(const QueryIteratorImpl& other) const noexcept
 	{
-		// TODO (mid): Compare archetypes, but comparing two vectors of pointers is causing a massive slowdown
-		// The QueryIteratorImpl shouldn't have archetypes but only a pointer to archetypes, but this would require a refactor of the QueryImpl class
-		//return archetypes == other.archetypes &&
-			return currentArchetypeIndex == other.currentArchetypeIndex &&
+		return archetypes == other.archetypes &&
+			currentArchetypeIndex == other.currentArchetypeIndex &&
 			currentEntityIndex == other.currentEntityIndex;
 	}
 
