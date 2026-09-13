@@ -27,8 +27,8 @@ namespace P2
 		schedule.addSystem(WindowSystems::RefreshDirtyRenderDataLabel{}, WindowSystems::RefreshDirtyRenderDataLabel::RefreshDirtyRenderData, ecs::Before(WindowSystems::RenderLabel{}));
 		schedule.addSystem(WindowSystems::RenderLabel{}, WindowSystems::RenderLabel::Render, ecs::MainThread{});
 
-		schedule.addSystem(ImGuiSystems::ImGuiUpdateLabel{}, ImGuiSystems::ImGuiUpdateLabel::ImGuiUpdate, ecs::MainThread{}, ecs::Before(WindowSystems::RenderLabel{}));
-		schedule.addSystem(ImGuiSystems::GameplayWindowLabel{}, ImGuiSystems::GameplayWindowLabel::GameplayWindow, ecs::MainThread{}, ecs::After(ImGuiSystems::ImGuiUpdateLabel{}), ecs::Before(WindowSystems::RenderLabel{}));
+		schedule.addSystem(ImGuiSystems::ImGuiUpdateLabel{}, ImGuiSystems::ImGuiUpdateLabel::ImGuiUpdate, ecs::Before(WindowSystems::RenderLabel{}));
+		schedule.addSystem(ImGuiSystems::GameplayWindowLabel{}, ImGuiSystems::GameplayWindowLabel::GameplayWindow, ecs::After(ImGuiSystems::ImGuiUpdateLabel{}), ecs::Before(WindowSystems::RenderLabel{}));
 
 		schedule.addSystem(GameplaySystems::ProcessClickLabel{}, GameplaySystems::ProcessClickLabel::ProcessClick, ecs::After(WindowSystems::PollEventsLabel{}));
 
