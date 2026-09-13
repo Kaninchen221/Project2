@@ -177,7 +177,7 @@ namespace P2::ecs
 		QueryIteratorImpl<IsConstT, Components...> end() noexcept { return endImpl(); }
 		QueryIteratorImpl<IsConstT, Components...> end() const noexcept { return endImpl(); }
 
-		// TODO (high): test and optimize
+		// TODO (high): test and optimize, write optimized operator + for the QueryIteratorImpl
 		QueryIteratorImpl<IsConstT, Components...> operator [](size_t index) const 
 		{
 			size_t currentIndex = 0;

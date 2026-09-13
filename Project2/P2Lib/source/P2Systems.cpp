@@ -120,6 +120,7 @@ namespace P2
 		/// We assume that we are using the window only from the main thread
 		//window.setActive(true);
 
+		// TODO (mid): do we need to clear the screen when we draw over the entire screen?
 		window.clear();
 
 		window.draw(renderDataRes->vertexBuffer);
