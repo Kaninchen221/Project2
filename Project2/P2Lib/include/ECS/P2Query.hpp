@@ -36,6 +36,8 @@ namespace P2::ecs
 
 		QueryIteratorImpl& operator++ () noexcept;
 
+		QueryIteratorImpl& operator+ (uint64_t offset) noexcept;
+
 		auto operator* () const noexcept;
 
 	private:
@@ -93,6 +95,44 @@ namespace P2::ecs
 			return *this;
 		}
 		while (true);
+
+		return *this;
+	}
+
+	template<class IsConstType, class ...Components>
+	inline QueryIteratorImpl<IsConstType, Components...>& QueryIteratorImpl<IsConstType, Components...>::operator+(uint64_t offset) noexcept
+	{
+		do
+		{
+			if (currentArchetypeIndex >= archetypes.size())
+			{
+				currentArchetypeIndex = InvalidIndex;
+				currentEntityIndex = InvalidIndex;
+				return *this;
+			}
+
+			auto* archetype = archetypes[currentArchetypeIndex];
+
+			if (currentEntityIndex + offset >= archetype->getEntitiesCount())
+			{
+				offset -= currentEntityIndex + archetype->getEntitiesCount();
+				++currentArchetypeIndex;
+				currentEntityIndex = 0;
+
+				if (currentArchetypeIndex >= archetypes.size())
+				{
+					currentArchetypeIndex = InvalidIndex;
+					currentEntityIndex = InvalidIndex;
+					return *this;
+				}
+
+				archetype = archetypes[currentArchetypeIndex];
+				continue;
+			}
+			currentEntityIndex += offset;
+
+			return *this;
+		} while (true);
 
 		return *this;
 	}
@@ -177,19 +217,9 @@ namespace P2::ecs
 		QueryIteratorImpl<IsConstT, Components...> end() noexcept { return endImpl(); }
 		QueryIteratorImpl<IsConstT, Components...> end() const noexcept { return endImpl(); }
 
-		// TODO (high): test and optimize, write optimized operator + for the QueryIteratorImpl
 		QueryIteratorImpl<IsConstT, Components...> operator [](size_t index) const 
 		{
-			size_t currentIndex = 0;
-			auto it = begin();
-			const auto endIt = end();
-			while (it != endIt && currentIndex != index)
-			{
-				++it;
-				++currentIndex;
-			}
-
-			return it;
+			return begin() + index;
 		}
 
 	private:
