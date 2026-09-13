@@ -275,4 +275,15 @@ namespace P2::ecs::tests
 		}
 	}
 
+	TEST(ECSQueryTest, OperatorSquareBracketsTest)
+	{
+		World world;
+		const int64_t entitiesCount = 10;
+		world.spawnBatch(entitiesCount, [](int64_t index) -> Sprite { return Sprite{ static_cast<int32_t>(index) }; });
+		ASSERT_EQ(world.getEntitiesCount(), entitiesCount);
+
+		ecs::ConstQuery<Sprite> query{ world };
+		EXPECT_EQ(std::get<0>(*query[4])->id, 4);
+		EXPECT_EQ(std::get<0>(*query[8])->id, 8);
+	}
 }
