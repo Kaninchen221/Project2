@@ -99,6 +99,9 @@ namespace P2
 			return;
 		}
 
+		auto graphResource = world.addOrGetResource<ecs::Graph>();
+		*graphResource = schedule.getGraph();
+
 		// Run the schedule
 		schedule.runOnce(world);
 	}

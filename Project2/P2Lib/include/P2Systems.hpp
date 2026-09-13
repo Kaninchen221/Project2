@@ -84,7 +84,8 @@ namespace P2
 				ecs::Resource<GameplayWindowData> gameplayWindowDataResource,
 				ecs::ConstResource<DeltaTime> deltaTimeResource,
 				ecs::Resource<GameplayData> gameplayDataResource,
-				ecs::Resource<WorldConfig> worldConfigResource
+				ecs::Resource<WorldConfig> worldConfigResource,
+				ecs::ConstResource<ecs::Graph> scheduleGraphResource
 			);
 
 			/// Gameplay windows

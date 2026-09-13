@@ -8,6 +8,11 @@
 
 namespace P2
 {
+	namespace ecs
+	{
+		struct Graph;
+	}
+
 	struct GameplayDataPerChannel
 	{
 		std::string name;
@@ -62,6 +67,8 @@ namespace P2
 	{
 		static constexpr int32_t VerticesPerObject = 6;
 
+		// TODO (very high): use something different than sf::VertexBuffer
+		// It's so unoptimized, memory and drawing speed
 		sf::VertexBuffer vertexBuffer;
 		bool isVertexBufferCreated = false;
 
@@ -77,7 +84,8 @@ namespace P2
 	{
 		const DeltaTime& deltaTime;
 		GameplayData& gameplayData;
-		WorldConfig& worldConfig; // TODO (low): it's a future candidate to be const
+		WorldConfig& worldConfig; // TODO (low): it's a future candidate to be const,
+		const ecs::Graph& scheduleGraph;
 	};
 
 	struct GameplayWindowData

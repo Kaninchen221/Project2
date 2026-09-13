@@ -89,6 +89,16 @@ namespace P2::ecs
 	{
 		std::vector<GraphNode> nodes;
 		tf::Taskflow taskflow;
+
+		GraphLayer() noexcept = default;
+		GraphLayer(const GraphLayer& other) { *this = other; }
+		GraphLayer(GraphLayer&& other) noexcept { *this = std::move(other); }
+		GraphLayer(const std::vector<GraphNode>& newNodes) { nodes = newNodes; }
+		~GraphLayer() noexcept = default;
+
+		/// It's skiping some of the data
+		GraphLayer& operator = (const GraphLayer& other);
+		GraphLayer& operator = (GraphLayer&& other) noexcept;
 	};
 
 	struct P2_API Graph
@@ -96,6 +106,14 @@ namespace P2::ecs
 		std::vector<GraphNode> nodes;
 		std::vector<GraphEdge> edges;
 		std::vector<GraphLayer> layers;
+
+		Graph() noexcept = default;
+		Graph(const Graph& other) { *this = other; }
+		Graph(Graph&& other) noexcept { *this = std::move(other); }
+		~Graph() noexcept = default;
+
+		Graph& operator = (const Graph& other);
+		Graph& operator = (Graph&& other) noexcept;
 	};
 
 	/// TODO (low): More integration with taskflow?

@@ -225,7 +225,8 @@ namespace P2
 		ecs::Resource<GameplayWindowData> gameplayWindowDataResource,
 		ecs::ConstResource<DeltaTime> deltaTimeResource,
 		ecs::Resource<GameplayData> gameplayDataResource,
-		ecs::Resource<WorldConfig> worldConfigResource
+		ecs::Resource<WorldConfig> worldConfigResource,
+		ecs::ConstResource<ecs::Graph> scheduleGraphResource
 	)
 	{
 		auto& gameplayWindowData = *gameplayWindowDataResource;
@@ -274,7 +275,8 @@ namespace P2
 		GameplayWindowParamPack paramPack {
 			*deltaTimeResource,
 			*gameplayDataResource,
-			*worldConfigResource
+			*worldConfigResource,
+			*scheduleGraphResource
 		};
 		std::invoke(gameplayWindowData.currentWindow, paramPack);
 
@@ -336,6 +338,7 @@ namespace P2
 		ImGui::NewLine(); // Horizontal spacing
 		SubWindowTitle("GameplayStats");
 
+		ImGui::Text("Entities count: %d", worldConfig.entitiesCount);
 		ImGui::Text("Current Level: %d", worldConfig.currentLevel);
 		ImGui::Text("Element Size: %.0f", worldConfig.elementSize);
 		ImGui::Text("Available Channels: %d", worldConfig.avaiableChannelsCountPerEntity);
@@ -387,6 +390,25 @@ namespace P2
 		const float deltaTimeAsMS = deltaTime.value.asSeconds() * 1000.f;
 		ImGui::Text("Delta time: %.3f ms", deltaTimeAsMS);
 		ImGui::Text("FPS: %.3f", 1000.f /*1 second as ms*/ / deltaTimeAsMS);
+
+		// Show schedule graph structure
+		auto& graph = gameplayWindowData.scheduleGraph;
+		int32_t layerIndex = 0;
+		for (const auto& layer : graph.layers)
+		{
+			ImGui::Text("Layer %d", layerIndex);
+			ImGui::Indent();
+			ImGui::Text("Nodes");
+			
+			for (const auto& node : layer.nodes)
+			{
+				ImGui::Text("%s : %dus", node.typeInfo->name(), node.executeTime.getAsMicroseconds());
+			}
+
+			ImGui::Unindent();
+
+			++layerIndex;
+		}
 	}
 
 	void ImGuiSystems::GameplayWindowLabel::ShowDebugCheatsWindow(GameplayWindowParamPack& gameplayWindowData)

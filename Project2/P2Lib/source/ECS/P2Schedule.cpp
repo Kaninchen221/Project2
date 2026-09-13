@@ -9,6 +9,36 @@ using namespace std::chrono_literals;
 
 namespace P2::ecs
 {
+	GraphLayer& GraphLayer::operator=(const GraphLayer& other)
+	{
+		nodes = other.nodes;
+		//taskflow = other.taskflow; It's not copyable
+		return *this;
+	}
+
+	GraphLayer& GraphLayer::operator=(GraphLayer&& other) noexcept
+	{
+		nodes = std::move(other.nodes);
+		taskflow = std::move(other.taskflow);
+		return *this;
+	}
+
+	Graph& Graph::operator=(const Graph& other)
+	{
+		nodes = other.nodes;
+		edges = other.edges;
+		layers = other.layers;
+		return *this;
+	}
+
+	Graph& Graph::operator=(Graph&& other) noexcept
+	{
+		nodes = std::move(other.nodes);
+		edges = std::move(other.edges);
+		layers = std::move(other.layers);
+		return *this;
+	}
+
 	void Schedule::buildGraph()
 	{
 		// Create graph nodes from systems infos
@@ -206,7 +236,7 @@ namespace P2::ecs
 			layers.push_back(
 				GraphLayer
 				{
-					.nodes = nodesWithoutIncomingEdge
+					nodesWithoutIncomingEdge
 				}
 			);
 
