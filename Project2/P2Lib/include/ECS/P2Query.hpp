@@ -36,18 +36,7 @@ namespace P2::ecs
 
 		QueryIteratorImpl& operator++ () noexcept;
 
-		// TODO (high): It had a bug, when we were returning a copy and not a ref
-		// But tests where green, so be sure that there are 2 tests for it: one for const and second for non-const
-		auto operator* () const noexcept 
-		{ 
-			auto archetype = archetypes[currentArchetypeIndex];
-			auto& entities = archetype->getEntities();
-
-			auto& entity = entities[currentEntityIndex];
-
-			using ReturnT = std::conditional_t<IsConstT{}, std::tuple<const Components*...>, std::tuple<Components*... >> ;
-			return ReturnT{ archetype->getComponentOfType<Components>(entity.getComponentsIndex())... };
-		}
+		auto operator* () const noexcept;
 
 	private:
 		
@@ -107,6 +96,18 @@ namespace P2::ecs
 
 		return *this;
 	}
+	
+	template<class IsConstType, class ...Components>
+	auto QueryIteratorImpl<IsConstType, Components...>::operator*() const noexcept
+	{
+		auto archetype = archetypes[currentArchetypeIndex];
+		auto& entities = archetype->getEntities();
+
+		auto& entity = entities[currentEntityIndex];
+
+		using ReturnT = std::conditional_t < IsConstT{}, std::tuple<const Components*...>, std::tuple<Components*... >> ;
+		return ReturnT{ archetype->getComponentOfType<Components>(entity.getComponentsIndex())... };
+	}
 
 	template<class... Components>
 	using QueryIterator = QueryIteratorImpl<std::false_type, Components...>;
@@ -128,6 +129,8 @@ namespace P2::ecs
 		using ComponentsT = std::tuple<Components...>;
 
 		using Archetypes = std::conditional_t<IsConstT{}, std::vector<const Archetype*>, std::vector<Archetype*>>;
+
+		static_assert(std::tuple_size_v<ComponentsT> != 0);
 
 		template<class WorldT>
 		QueryImpl(WorldT& world)
@@ -157,7 +160,9 @@ namespace P2::ecs
 
 		size_t getComponentCount() const noexcept;
 
-		constexpr size_t getTypeCount() const noexcept { return sizeof...(Components); }
+		size_t getComponentPerTypeCount() const noexcept;
+
+		constexpr size_t getTypeCount() const noexcept { return std::tuple_size_v<ComponentsT>; }
 
 		bool isEmpty() const noexcept { return getComponentCount() == 0; }
 
@@ -211,6 +216,14 @@ namespace P2::ecs
 			((count += archetype->getComponentsOfType<Components>()->getObjectsCount()), ...);
 		}
 		return count;
+	}
+
+	template<class IsConstType, class... Components>
+	inline size_t QueryImpl<IsConstType, Components...>::getComponentPerTypeCount() const noexcept
+	{
+		// We shouldn't be able to create a Query<> without any types
+		// So getTypeCount can't return 0
+		return getComponentCount() / getTypeCount();
 	}
 
 	template<class IsConstType, class... Components>

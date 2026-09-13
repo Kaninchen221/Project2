@@ -146,11 +146,8 @@ namespace P2
 		constexpr int32_t verticesPerObject = 6;
 		auto& vertexBuffer = renderData.vertexBuffer;
 
-		/// Create Vertex Buffer if it's not created
-		// TODO (mid): Refactor the componentPerTypeCount, create a function in the query
-		const auto componentPerTypeCount = static_cast<uint32_t>(drawableQuery.getComponentCount() / drawableQuery.getTypeCount());
-		
 		vertexBuffer = sf::VertexBuffer{}; // To make sure that the underlying buffer was properly released
+		const auto componentPerTypeCount = drawableQuery.getComponentPerTypeCount();
 		const auto vertexCount = componentPerTypeCount * verticesPerObject;
 		if (!vertexBuffer.create(vertexCount))
 		{
@@ -427,14 +424,14 @@ namespace P2
 				Logger->trace("Mouse clicked at element: {}", clickedEntityIndex);
 				
 				// Check bounds
-				const auto entitiesCount = drawableQuery.getComponentCount() / drawableQuery.getTypeCount();
+				const auto entitiesCount = drawableQuery.getComponentPerTypeCount();
 				if (clickedEntityIndex < 0 || clickedEntityIndex >= entitiesCount)
 				{
 					Logger->trace("Player clicked not at any entity");
 					continue;
 				}
 
-				// Affect the clicked entity's color
+				// Affect the clicked entity color
 				auto [posPtr, colorPtr] = drawableQuery.operator[](clickedEntityIndex).operator*();
 
 				auto affectColorChannel = 

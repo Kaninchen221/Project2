@@ -23,7 +23,8 @@ namespace P2::ecs::tests
 		size_t expectedVelocitiesCount = 0;
 		size_t expectedPositionsCount = 0;
 
-		size_t expectedSpritesVelocitiesPairsCount = 0;
+		size_t expectedSpriteVelocitiePairsCount = 0;
+		size_t expectedSpritePositionPairsCount = 0;
 
 		void SetUp() override
 		{
@@ -43,6 +44,53 @@ namespace P2::ecs::tests
 
 		const Query<Position> queryPositions{ world };
 		EXPECT_EQ(queryPositions.getComponentCount(), expectedPositionsCount);
+
+		const Query<Sprite, Velocity> querySpriteVelocity{ world };
+		EXPECT_EQ(querySpriteVelocity.getTypeCount(), 2); /* Bacuse we have 2 component types in the query */
+		EXPECT_EQ(
+			querySpriteVelocity.getComponentCount(), 
+			expectedSpriteVelocitiePairsCount * querySpriteVelocity.getTypeCount());
+
+		const Query<Sprite, Position> querySpritePosition{ world };
+		EXPECT_EQ(querySpriteVelocity.getTypeCount(), 2); /* Bacuse we have 2 component types in the query */
+		EXPECT_EQ(
+			querySpritePosition.getComponentCount(), 
+			expectedSpritePositionPairsCount * querySpriteVelocity.getTypeCount());
+	}
+
+	TEST_F(ECSQueryTests, GetComponentPerTypeCountTest)
+	{
+		const Query<Velocity> queryVelocities{ world };
+		EXPECT_EQ(
+			queryVelocities.getComponentPerTypeCount(),
+			expectedVelocitiesCount);
+
+		const Query<Sprite, Velocity> querySpriteVelocity{ world };
+		EXPECT_EQ(
+			querySpriteVelocity.getComponentPerTypeCount(),
+			expectedSpriteVelocitiePairsCount);
+	}
+
+	TEST_F(ECSQueryTests, AsterixOperatorTest)
+	{
+		// Take the first sprite from a const query for later check
+		const ConstQuery<Sprite> constQuery{ world };
+		const auto constBegin = constQuery.begin();
+		const auto constSprite = *constBegin;
+
+		// Take the first sprite from a non-const query
+		const Query<Sprite> query{ world };
+		const auto begin = query.begin();
+		ASSERT_NE(begin, query.end());
+
+		auto sprite = *begin;
+		std::get<0>(sprite)->id = 600; // Modify the id value with random value
+
+		// Check the id value to be sure that "operator *" is not returning a copy
+		EXPECT_EQ(std::get<0>(sprite)->id, std::get<0>(*begin)->id);
+
+		// Now check the constSprite to be sure that we didn't get a copy of the sprite
+		EXPECT_EQ(std::get<0>(constSprite)->id, std::get<0>(*begin)->id);
 	}
 
 	TEST_F(ECSQueryTests, IteratorsSingleComponentTypeTest)
@@ -156,7 +204,8 @@ namespace P2::ecs::tests
 		expectedVelocitiesCount = 5;
 		expectedPositionsCount = 2;
 
-		expectedSpritesVelocitiesPairsCount = 4;
+		expectedSpriteVelocitiePairsCount = 4;
+		expectedSpritePositionPairsCount = 2;
 	}
 
 	TEST(ECSQueryTest, QueryComponentsThatDontExistTest)
