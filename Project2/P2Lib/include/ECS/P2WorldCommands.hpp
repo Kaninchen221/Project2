@@ -59,6 +59,8 @@ namespace P2::ecs
 			return world.removeAll<Components...>();
 		}
 
+		size_t getEntitiesCount() const noexcept { world.getEntitiesCount(); }
+
 		/// Resources
 		// Resources are unique by type
 		// User can't remove resources
@@ -78,10 +80,6 @@ namespace P2::ecs
 
 			commands.push_back(std::move(World::Command{ std::move(command) }));
 		}
-
-		// TODO (mid): Add getEntitiesCount from World class
-		// Or refactor World and WorldCommands to one class?
-		// Now we have nearly duplicated class and tests
 
 	protected:
 
