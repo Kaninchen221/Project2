@@ -17,12 +17,15 @@ namespace P2
 		ecs::Resource<WindowEvents> windowEventsResource
 	)
 	{
+		if (!IsMainThread())
+		{
+			Logger->critical("We expect this system to be called from the main thread");
+			return;
+		}
+
 		auto& window = *renderWindowResource;
 		if (!window.isOpen())
 			return;
-
-		/// We assume that we are using the window only from the main thread
-		//window.setActive(true);
 
 		auto& windowEvents = *windowEventsResource;
 		windowEvents.events.clear();
@@ -111,14 +114,17 @@ namespace P2
 		ecs::Resource<RenderData> renderDataRes
 	)
 	{
+		if (!IsMainThread())
+		{
+			Logger->critical("We expect this system to be called from the main thread");
+			return;
+		}
+
 		auto& window = *renderWindowResource;
 		if (!window.isOpen())
 		{
 			return;
 		}
-
-		/// We assume that we are using the window only from the main thread
-		//window.setActive(true);
 
 		// TODO (mid): do we need to clear the screen when we draw over the entire screen?
 		window.clear();

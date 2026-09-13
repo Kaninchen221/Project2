@@ -13,6 +13,10 @@
 
 namespace P2
 {
+	const static auto MainThreadID = std::this_thread::get_id();
+
+	inline bool IsMainThread() noexcept { return MainThreadID == std::this_thread::get_id(); }
+
 	inline bool CompareContainers(auto&& lhs, auto&& rhs)
 	{
 		if (lhs.size() != rhs.size())
