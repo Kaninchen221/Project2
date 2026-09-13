@@ -150,9 +150,6 @@ namespace P2
 		// TODO (mid): Refactor the componentPerTypeCount, create a function in the query
 		const auto componentPerTypeCount = static_cast<uint32_t>(drawableQuery.getComponentCount() / drawableQuery.getTypeCount());
 		
-		// TODO (mid): Remove this check and 'isVertexBufferCreated' var
-		//if (!renderData.isVertexBufferCreated)
-		//{
 		vertexBuffer = sf::VertexBuffer{}; // To make sure that the underlying buffer was properly released
 		const auto vertexCount = componentPerTypeCount * verticesPerObject;
 		if (!vertexBuffer.create(vertexCount))
@@ -160,11 +157,10 @@ namespace P2
 			Logger->error("Couldn't create vertex buffer, vertex count: {}", vertexCount);
 			return;
 		}
+		renderData.isVertexBufferCreated = true;
 		vertexBuffer.setPrimitiveType(sf::PrimitiveType::Triangles);
 		vertexBuffer.setUsage(sf::VertexBuffer::Usage::Stream);
-		//}
 
-		//const auto vertexCount = componentPerTypeCount * verticesPerObject;
 		std::vector<sf::Vertex> vertices;
 		vertices.reserve(vertexCount);
 
