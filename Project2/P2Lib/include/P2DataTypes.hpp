@@ -42,7 +42,7 @@ namespace P2
 		sf::Vector2f currentWindowSizePixels;
 		sf::Vector2f windowSizeRatio;
 		int32_t currentLevel = 1;
-		int32_t avaiableChannelsCountPerEntity = 0;
+		int32_t availableChannelsCountPerEntity = 0;
 		int256_t requiredExperienceToFinishCurrentLevel = 0;
 		bool needsRecreateWorld = false;
 		bool needsRecreateRenderData = false;

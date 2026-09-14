@@ -22,7 +22,7 @@ namespace P2
 
 	static int256_t GetRequiredExperienceToFinishCurrentLevel(const int64_t entitiesCount, const int64_t availableChannelsCountPerEntity)
 	{
-		return int256_t(entitiesCount) * availableChannelsCountPerEntity * WorldConfig::MaxChannelValue * 1'000'000;
+		return int256_t(entitiesCount) * availableChannelsCountPerEntity * WorldConfig::MaxChannelValue;
 	}
 
 	inline static WorldConfig GetNextLevelWorldConfig(const WorldConfig& worldConfig)
@@ -31,7 +31,7 @@ namespace P2
 
 		const auto worldSize = GetWorldSizeFromWindowSize(worldConfig.originalWindowSizePixels, elementSize);
 		const int64_t entitiesCount = GetEntitiesCountFromWorldSize(worldSize);
-		const int32_t availableChannelsCountPerEntity = std::clamp(worldConfig.avaiableChannelsCountPerEntity + 1, 1, 3);
+		const int32_t availableChannelsCountPerEntity = std::clamp(worldConfig.availableChannelsCountPerEntity + 1, 1, 3);
 		const auto requiredExperienceToFinishCurrentLevel = 
 			GetRequiredExperienceToFinishCurrentLevel(entitiesCount, availableChannelsCountPerEntity) + worldConfig.requiredExperienceToFinishCurrentLevel;
 		const auto requiredExperienceToFinishCurrentLevelAsString = requiredExperienceToFinishCurrentLevel.str();
@@ -45,7 +45,7 @@ namespace P2
 			.currentWindowSizePixels = worldConfig.currentWindowSizePixels,
 			.windowSizeRatio = worldConfig.windowSizeRatio,
 			.currentLevel = worldConfig.currentLevel + 1,
-			.avaiableChannelsCountPerEntity = availableChannelsCountPerEntity,
+			.availableChannelsCountPerEntity = availableChannelsCountPerEntity,
 			.requiredExperienceToFinishCurrentLevel = requiredExperienceToFinishCurrentLevel,
 			.needsRecreateWorld = true,
 			.needsRecreateRenderData = worldConfig.needsRecreateRenderData

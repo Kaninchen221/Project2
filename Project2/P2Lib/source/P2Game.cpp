@@ -155,8 +155,8 @@ namespace P2
 		worldConfig->originalWindowSizePixels = sf::Vector2f(static_cast<float>(window->getSize().x), static_cast<float>(window->getSize().y));
 		worldConfig->currentWindowSizePixels = worldConfig->originalWindowSizePixels;
 		worldConfig->windowSizeRatio = sf::Vector2f(1.0f, 1.0f);
-		worldConfig->avaiableChannelsCountPerEntity = 1;
-		worldConfig->requiredExperienceToFinishCurrentLevel = GetRequiredExperienceToFinishCurrentLevel(worldConfig->entitiesCount, worldConfig->avaiableChannelsCountPerEntity);
+		worldConfig->availableChannelsCountPerEntity = 1;
+		worldConfig->requiredExperienceToFinishCurrentLevel = GetRequiredExperienceToFinishCurrentLevel(worldConfig->entitiesCount, worldConfig->availableChannelsCountPerEntity);
 		worldConfig->needsRecreateWorld = true;
 	}
 }

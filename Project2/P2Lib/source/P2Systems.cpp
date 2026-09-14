@@ -293,13 +293,13 @@ namespace P2
 		UpgradeWindowPerChannel(gameplayData.r);
 		ImGui::Separator();
 
-		if (worldConfig.avaiableChannelsCountPerEntity > 1)
+		if (worldConfig.availableChannelsCountPerEntity > 1)
 		{
 			UpgradeWindowPerChannel(gameplayData.g);
 			ImGui::Separator();
 		}
 
-		if (worldConfig.avaiableChannelsCountPerEntity > 2)
+		if (worldConfig.availableChannelsCountPerEntity > 2)
 		{
 			UpgradeWindowPerChannel(gameplayData.b);
 			ImGui::Separator();
@@ -341,7 +341,7 @@ namespace P2
 		ImGui::Text("Entities count: %d", worldConfig.entitiesCount);
 		ImGui::Text("Current Level: %d", worldConfig.currentLevel);
 		ImGui::Text("Element Size: %.0f", worldConfig.elementSize);
-		ImGui::Text("Available Channels: %d", worldConfig.avaiableChannelsCountPerEntity);
+		ImGui::Text("Available Channels: %d", worldConfig.availableChannelsCountPerEntity);
 		ImGui::SetItemTooltip("Every quad has channels that define its color, at the start only the red channel is available");
 		ImGui::Text("Required Experience: %s", worldConfig.requiredExperienceToFinishCurrentLevel.str().c_str());
 		ImGui::SetItemTooltip("Required experience to finish the current level");
@@ -523,15 +523,15 @@ namespace P2
 		const auto color = 
 			[&worldConfig = worldConfig]()
 			{
-				if (worldConfig.avaiableChannelsCountPerEntity == 1)
+				if (worldConfig.availableChannelsCountPerEntity == 1)
 				{
 					return Color(sf::Color::Red);
 				}
-				else if (worldConfig.avaiableChannelsCountPerEntity == 2)
+				else if (worldConfig.availableChannelsCountPerEntity == 2)
 				{
 					return Color(sf::Color::Red + sf::Color::Green);
 				}
-				else if (worldConfig.avaiableChannelsCountPerEntity == 3)
+				else if (worldConfig.availableChannelsCountPerEntity == 3)
 				{
 					return Color(sf::Color::White);
 				}
