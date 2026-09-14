@@ -13,6 +13,7 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(SFML CONFIG REQUIRED)
 find_package(taskflow CONFIG REQUIRED)
 find_package(stb CONFIG REQUIRED)
+find_package(boost CONFIG REQUIRED)
 
 # Add subdirectories
 add_subdirectory(Project2/ImGuiLib)

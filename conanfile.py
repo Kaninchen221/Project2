@@ -14,7 +14,8 @@ class Game2DConanFile(ConanFile):
         "nlohmann_json/3.10.5@",
         "sfml/3.0.2@",
         "taskflow/4.0.0@",
-        "stb/cci.20240531@"
+        "stb/cci.20240531@",
+        "boost/1.91.0@"
         ]
 
     default_options = {
@@ -24,13 +25,7 @@ class Game2DConanFile(ConanFile):
         "spdlog/*:header_only": False,
         "spdlog/*:shared": False,
         "stb/*:shared": False,
-        "nlohmann_json/*:shared": False,
-        "glm/*:shared": False,
-        "glslang/*:shared": False,
-        "glslang/*:build_executables": False,
-        "spirv-headers/*:shared": False,
-        "spirv-tools/*:shared": False,
-        "vulkan-memory-allocator/*:shared": False
+        "nlohmann_json/*:shared": False
         }
 
     def requirements(self):
@@ -42,6 +37,7 @@ class Game2DConanFile(ConanFile):
     def configure(self):
         self.options["spdlog"].header_only = False
         self.options["spdlog"].shared = False
+        self.options["boost"].without_cobalt = True
         
     def layout(self):
         cmake_layout(self)

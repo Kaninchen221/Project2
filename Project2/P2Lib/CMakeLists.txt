@@ -18,6 +18,7 @@ target_link_libraries(P2Lib PUBLIC
 	Taskflow::Taskflow
 	stb::stb
 	ImGuiSFML
+	boost::boost
 )
 
 set_target_properties(P2Lib PROPERTIES
