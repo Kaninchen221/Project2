@@ -1,6 +1,7 @@
 #pragma once
 
 #include "P2LibConfig.hpp"
+#include "P2BoostTypes.hpp"
 
 #include <chrono>
 
@@ -42,8 +43,7 @@ namespace P2
 		sf::Vector2f windowSizeRatio;
 		int32_t currentLevel = 1;
 		int32_t avaiableChannelsCountPerEntity = 0;
-		// TODO (high): it's flipping the sign after X levels
-		int64_t requiredExperienceToFinishCurrentLevel = 0;
+		int256_t requiredExperienceToFinishCurrentLevel = 0;
 		bool needsRecreateWorld = false;
 		bool needsRecreateRenderData = false;
 	};

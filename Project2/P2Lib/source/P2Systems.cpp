@@ -343,7 +343,7 @@ namespace P2
 		ImGui::Text("Element Size: %.0f", worldConfig.elementSize);
 		ImGui::Text("Available Channels: %d", worldConfig.avaiableChannelsCountPerEntity);
 		ImGui::SetItemTooltip("Every quad has channels that define its color, at the start only the red channel is available");
-		ImGui::Text("Required Experience: %d", worldConfig.requiredExperienceToFinishCurrentLevel);
+		ImGui::Text("Required Experience: %s", worldConfig.requiredExperienceToFinishCurrentLevel.str().c_str());
 		ImGui::SetItemTooltip("Required experience to finish the current level");
 		ImGui::Text("Total Experience: %d", gameplayData.totalExperience);
 		const float completePercentage = std::roundf(static_cast<float>(gameplayData.totalExperience) / static_cast<float>(worldConfig.requiredExperienceToFinishCurrentLevel) * 100.f);

@@ -20,9 +20,9 @@ namespace P2
 		return static_cast<int64_t>(worldSize.x) * static_cast<int64_t>(worldSize.y);
 	}
 
-	static int64_t GetRequiredExperienceToFinishCurrentLevel(const int64_t entitiesCount, const int32_t availableChannelsCountPerEntity)
+	static int256_t GetRequiredExperienceToFinishCurrentLevel(const int64_t entitiesCount, const int64_t availableChannelsCountPerEntity)
 	{
-		return entitiesCount * availableChannelsCountPerEntity * WorldConfig::MaxChannelValue;
+		return int256_t(entitiesCount) * availableChannelsCountPerEntity * WorldConfig::MaxChannelValue * 1'000'000;
 	}
 
 	inline static WorldConfig GetNextLevelWorldConfig(const WorldConfig& worldConfig)
@@ -34,6 +34,7 @@ namespace P2
 		const int32_t availableChannelsCountPerEntity = std::clamp(worldConfig.avaiableChannelsCountPerEntity + 1, 1, 3);
 		const auto requiredExperienceToFinishCurrentLevel = 
 			GetRequiredExperienceToFinishCurrentLevel(entitiesCount, availableChannelsCountPerEntity) + worldConfig.requiredExperienceToFinishCurrentLevel;
+		const auto requiredExperienceToFinishCurrentLevelAsString = requiredExperienceToFinishCurrentLevel.str();
 
 		const WorldConfig newWorldConfig
 		{
