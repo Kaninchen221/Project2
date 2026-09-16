@@ -8,6 +8,6 @@ int main()
 	game.initialize();
 	game.loop();
 	game.deinitialize();
-	
+
 	return 0;
 }

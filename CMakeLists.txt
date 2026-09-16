@@ -24,7 +24,3 @@ message(STATUS "*** Add Third Party Libs ***")
 message(STATUS "*** ImGui and related ***")
 add_subdirectory(Project2/ImGuiLib)
 add_subdirectory(Project2/ImGuiSFMLLib)
-
-message(STATUS "*** Magnum and related ***")
-add_subdirectory(Project2/corrade)
-add_subdirectory(Project2/magnum)
