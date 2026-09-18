@@ -67,6 +67,12 @@ namespace P2
 	{
 		static constexpr int32_t VerticesPerObject = 6;
 
+		sf::RenderTexture result;
+		bool isRenderTexturePrepared = false;
+
+		sf::Shader shader;
+		bool isShaderReady = false;
+
 		// TODO (very high): use something different than sf::VertexBuffer
 		// It's so unoptimized, memory and drawing speed
 		sf::VertexBuffer vertexBuffer;

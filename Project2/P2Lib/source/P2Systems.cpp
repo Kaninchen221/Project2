@@ -6,6 +6,7 @@
 
 #include "P2ImGuiUtils.hpp"
 #include "P2GameplayUtils.hpp"
+#include "P2Shaders.hpp"
 
 using namespace std::chrono_literals;
 
@@ -114,22 +115,66 @@ namespace P2
 		ecs::Resource<RenderData> renderDataRes
 	)
 	{
+		auto& window = *renderWindowResource;
+		auto& renderData = *renderDataRes;
+
 		if (!IsMainThread())
 		{
 			Logger->critical("We expect this system to be called from the main thread");
 			return;
 		}
 
-		auto& window = *renderWindowResource;
 		if (!window.isOpen())
 		{
 			return;
 		}
 
-		// TODO (mid): do we need to clear the screen when we draw over the entire screen?
+		if (!renderData.isRenderTexturePrepared)
+		{
+			if (!renderData.result.resize(window.getSize()))
+			{
+				Logger->critical("Couldn't resize texture");
+				return;
+			}
+			renderData.isRenderTexturePrepared = true;
+		}
+
 		window.clear();
 
-		window.draw(renderDataRes->vertexBuffer);
+		if (!renderData.isShaderReady)
+		{
+			if (!renderData.shader.loadFromMemory(GetVertexShader(), sf::Shader::Type::Vertex))
+			{
+				Logger->critical("Couldn't load vertex shader from memory");
+				return;
+			}
+
+			if (!renderData.shader.loadFromMemory(GetFragmentShader(), sf::Shader::Type::Fragment))
+			{
+				Logger->critical("Couldn't load fragment shader from memory");
+				return;
+			}
+
+			renderData.isShaderReady = true;
+		}
+		else
+		{
+			renderData.result.clear();
+			auto renderStates = sf::RenderStates::Default;
+			renderStates.shader = &renderData.shader;
+
+			renderData.result.draw(renderData.vertexBuffer, renderStates);
+			renderData.result.display();
+
+			const sf::Vector2<int32_t> spriteSize(window.getSize().x, window.getSize().y);
+			//const sf::Vector2<int32_t> spriteSize(1, 1);
+			sf::Sprite sprite{ renderData.result.getTexture(), sf::IntRect({ 0,0 }, spriteSize) };
+
+			window.draw(sprite);
+
+			//const sf::Glsl::Mat4 MVP{ window.getView().getTransform().getMatrix() };
+			//renderData.shader.setUniform("OurMVP\0", MVP);
+		}
 
 		ImGui::SFML::Render(window);
 

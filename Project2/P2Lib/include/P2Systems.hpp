@@ -53,7 +53,7 @@ namespace P2
 				ecs::Resource<RenderData> renderDataRes
 			);
 		};
-
+		
 		struct RecreateRenderDataLabel
 		{
 			inline static auto Logger = ConsoleLogger::CreateOrGet("RecreateRenderDataLabel");
